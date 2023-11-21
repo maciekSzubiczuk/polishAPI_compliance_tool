@@ -8,6 +8,27 @@ app = Flask(__name__)
 polish_api_data = None
 santander_api_data = []
 
+def categorize_differences(diff):
+    categorized_diff = {
+        'added': [],
+        'removed': [],
+        'changed': []
+    }
+
+    if 'dictionary_item_added' in diff:
+        categorized_diff['added'].extend([str(item) for item in diff['dictionary_item_added']])
+    
+    if 'dictionary_item_removed' in diff:
+        categorized_diff['removed'].extend([str(item) for item in diff['dictionary_item_removed']])
+    
+    if 'values_changed' in diff:
+        categorized_diff['changed'].extend([str(item) for item in diff['values_changed']])
+
+    # Add more categorization as necessary based on the output of DeepDiff
+
+    return categorized_diff
+
+
 def load_yaml_from_file(file):
     if file:
         return yaml.safe_load(file)
@@ -45,13 +66,12 @@ def index():
 
 @app.route('/display')
 def display():
-    # Assuming each API comparison is stored in santander_api_data
-    raw_differences = []
+    formatted_differences = []
     for santander_api in santander_api_data:
         diff = compare_apis(polish_api_data, santander_api)
-        raw_differences.append(diff)
-    return render_template('display.html', differences=raw_differences)
-
+        formatted_differences.append(categorize_differences(diff))
+    print(formatted_differences)
+    return render_template('display.html', differences=formatted_differences)
 
 if __name__ == '__main__':
     app.run(debug=True)

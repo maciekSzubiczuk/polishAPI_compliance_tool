@@ -3,17 +3,12 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        .diff-container {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        .diff-title {
-            font-weight: bold;
-        }
-        .diff-detail {
-            margin-left: 20px;
-        }
+        .added { color: green; }
+        .removed { color: red; }
+        .changed { color: blue; }
+        .diff-container { /* Styling for the diff container */ }
+        .diff-detail { /* Styling for each diff detail */ }
+        /* Additional styling */
     </style>
 </head>
 <body>
@@ -21,19 +16,26 @@
         <h2>Comparison Results</h2>
         {% for diff in differences %}
             <div class="diff-container">
-                {% for diff_type, changes in diff.items() %}
-                    <div class="diff-title">{{ diff_type | replace('_', ' ') | capitalize }}</div>
-                    {% for change in changes %}
-                        <div class="diff-detail">{{ change }}</div>
-                    {% endfor %}
+                <div class="diff-title">Added Items</div>
+                {% for item in diff['added'] %}
+                    <div class="added">{{ item }}</div>
+                {% endfor %}
+
+                <div class="diff-title">Removed Items</div>
+                {% for item in diff['removed'] %}
+                    <div class="removed">{{ item }}</div>
+                {% endfor %}
+
+                <div class="diff-title">Changed Items</div>
+                {% for item in diff['changed'] %}
+                    <div class="changed">{{ item }}</div>
                 {% endfor %}
             </div>
-        {% else %}
-            <p>No differences found.</p>
         {% endfor %}
     </div>
 </body>
 </html>
+
 
 
 
