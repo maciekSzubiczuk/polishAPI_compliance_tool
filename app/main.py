@@ -14,7 +14,7 @@ def load_yaml_from_file(file):
 
 def compare_apis(polish_api, santander_api):
     differences = DeepDiff(polish_api, santander_api, ignore_order=True)
-    return json_serializable_diff(differences.to_dict())
+    return differences
 
 def json_serializable_diff(diff_dict):
     """ Recursively convert complex objects in diff_dict to serializable formats. """
@@ -29,7 +29,6 @@ def json_serializable_diff(diff_dict):
 def index():
     global polish_api_data, santander_api_data
     if request.method == 'POST':
-        # Handle file uploads
         polish_api_file = request.files.get('polishapi_file')
         santander_files = request.files.getlist('santander_files')
 
@@ -46,14 +45,13 @@ def index():
 
 @app.route('/display')
 def display():
-    # Compare the APIs and get differences
-    differences = []
+    # Assuming each API comparison is stored in santander_api_data
+    raw_differences = []
     for santander_api in santander_api_data:
         diff = compare_apis(polish_api_data, santander_api)
-        differences.append(diff)
+        raw_differences.append(diff)
+    return render_template('display.html', differences=raw_differences)
 
-    # Render display page with differences
-    return render_template('display.html', differences=differences)
 
 if __name__ == '__main__':
     app.run(debug=True)

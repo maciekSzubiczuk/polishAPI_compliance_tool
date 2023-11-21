@@ -3,37 +3,30 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .diff-section {
-            border: 1px solid #ddd;
-            margin: 10px;
+        .diff-container {
+            margin-bottom: 10px;
             padding: 10px;
+            border: 1px solid #ccc;
         }
-        .added { color: green; }
-        .removed { color: red; }
-        .changed { color: blue; }
-        .preformatted { white-space: pre-wrap; }
+        .diff-title {
+            font-weight: bold;
+        }
+        .diff-detail {
+            margin-left: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Comparison Results</h2>
         {% for diff in differences %}
-            <div class="diff-section">
-                <h3>Difference {{ loop.index }}</h3>
-                {% if diff.dictionary_item_added %}
-                    <div class="added preformatted">Added: {{ diff.dictionary_item_added }}</div>
-                {% endif %}
-                {% if diff.dictionary_item_removed %}
-                    <div class="removed preformatted">Removed: {{ diff.dictionary_item_removed }}</div>
-                {% endif %}
-                {% if diff.values_changed %}
-                    <div class="changed preformatted">Changed: {{ diff.values_changed }}</div>
-                {% endif %}
+            <div class="diff-container">
+                {% for diff_type, changes in diff.items() %}
+                    <div class="diff-title">{{ diff_type | replace('_', ' ') | capitalize }}</div>
+                    {% for change in changes %}
+                        <div class="diff-detail">{{ change }}</div>
+                    {% endfor %}
+                {% endfor %}
             </div>
         {% else %}
             <p>No differences found.</p>
@@ -41,6 +34,12 @@
     </div>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
