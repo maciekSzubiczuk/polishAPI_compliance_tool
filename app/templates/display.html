@@ -1,10 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>YAML Content</title>
+    <title>API Compliance Check</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .display-section {
+            width: 45%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 10px;
+            overflow: auto;
+        }
+        .yaml-content {
+            white-space: pre; /* Preserves formatting of preformatted text */
+        }
+    </style>
 </head>
 <body>
-    <h1>YAML File Content</h1>
-    <pre>{{ content | tojson | safe }}</pre>
+    <div class="container">
+        <!-- Display Polish API Data -->
+        <div class="display-section">
+            <h2>Polish API Specification</h2>
+            <div class="yaml-content">{{ polish_api }}</div>
+        </div>
+
+        <!-- Display Santander API Data -->
+        <div class="display-section">
+            <h2>Santander API Implementation</h2>
+            {% for data in santander_api %}
+                <div class="yaml-content">{{ data }}</div>
+            {% endfor %}
+        </div>
+    </div>
 </body>
 </html>
+

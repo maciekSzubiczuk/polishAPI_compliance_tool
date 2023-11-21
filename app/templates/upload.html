@@ -1,14 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload YAML File</title>
-    <!-- Link to CSS Styles -->
+    <title>API YAML File Upload</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .upload-section {
+            width: 45%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 10px;
+        }
+        .button-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        function addFileInput() {
+            var newInput = document.createElement("input");
+            newInput.type = "file";
+            newInput.name = "santander_files";
+
+            var addButton = document.getElementById("add-file-button");
+            document.getElementById("santander-upload-section").insertBefore(newInput, addButton);
+            document.getElementById("santander-upload-section").insertBefore(document.createElement("br"), addButton);
+        }
+    </script>
 </head>
 <body>
-    <h1>Upload YAML File</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <input type="submit" value="Upload">
+    <form action="/" method="post" enctype="multipart/form-data">
+        <div class="container">
+            <!-- Polish API Specification Upload -->
+            <div class="upload-section">
+                <h2>Upload Polish API Specification</h2>
+                <input type="file" name="polishapi_file">
+            </div>
+
+            <!-- Santander API Implementation Upload -->
+            <div class="upload-section" id="santander-upload-section">
+                <h2>Upload Santander API Implementation</h2>
+                <input type="file" name="santander_files"><br>
+                <button type="button" id="add-file-button" onclick="addFileInput()">Add Another File</button>
+            </div>
+        </div>
+
+        <div class="button-section">
+            <input type="submit" value="Check Compliance">
+        </div>
     </form>
 </body>
 </html>
+
+
+
