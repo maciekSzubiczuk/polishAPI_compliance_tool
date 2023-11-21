@@ -3,6 +3,11 @@
 <head>
     <title>API Compliance Check</title>
     <style>
+        .yaml-content-wrapper {
+            border-radius: 5px;
+            padding: 10px;
+            overflow-x: auto;
+        }
         .diff-row {
             display: flex;
             margin-bottom: 20px;
@@ -21,6 +26,14 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
+        .yaml-content-wrapper {
+            border-radius: 5px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        .added { background-color: lightgreen; }
+        .removed { background-color: lightcoral; }
+        .changed { background-color: lightblue; }
         .yaml-content {
             white-space: pre; 
             font-family: monospace; 
@@ -29,9 +42,6 @@
             padding: 10px;
             overflow-x: auto;
         }
-        .added { background-color: lightgreen; }
-        .removed { background-color: lightcoral; }
-        .changed { background-color: lightblue; }
     </style>
 </head>
 <body>
@@ -43,7 +53,7 @@
                     <div class="diff-section">
                         <div class="path-title">{{ path }}</div>
                         {% if change.left %}
-                            <div class="{{ 'removed' if change.right is none else 'changed' }}">
+                            <div class="yaml-content-wrapper {{ 'removed' if change.right is none }}">
                                 <pre class="yaml-content">{{ change.left | safe }}</pre>
                             </div>
                         {% endif %}
@@ -51,7 +61,7 @@
                     <div class="diff-section">
                         <div class="path-title">{{ path }}</div>
                         {% if change.right %}
-                            <div class="{{ 'added' if change.left is none else 'changed' }}">
+                            <div class="yaml-content-wrapper {{ 'added' if change.left is none }}">
                                 <pre class="yaml-content">{{ change.right | safe }}</pre>
                             </div>
                         {% endif %}
@@ -64,6 +74,7 @@
     </div>
 </body>
 </html>
+
 
 
 
