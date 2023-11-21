@@ -3,11 +3,31 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        .added { color: green; }
-        .removed { color: red; }
-        .changed { color: blue; }
-        .diff-container { /* Styling for the diff container */ }
-        .diff-detail { /* Styling for each diff detail */ }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+        .diff-row {
+            display: flex;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .diff-section {
+            flex: 1;
+            padding: 10px;
+            border-right: 1px solid #ddd;
+        }
+        .diff-section:last-child {
+            border-right: none;
+        }
+        .added { background-color: lightgreen; }
+        .removed { background-color: lightcoral; }
+        .changed { background-color: lightblue; }
+        .path-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
         /* Additional styling */
     </style>
 </head>
@@ -15,27 +35,32 @@
     <div class="container">
         <h2>Comparison Results</h2>
         {% for diff in differences %}
-            <div class="diff-container">
-                <div class="diff-title">Added Items</div>
-                {% for item in diff['added'] %}
-                    <div class="added">{{ item }}</div>
-                {% endfor %}
-
-                <div class="diff-title">Removed Items</div>
-                {% for item in diff['removed'] %}
-                    <div class="removed">{{ item }}</div>
-                {% endfor %}
-
-                <div class="diff-title">Changed Items</div>
-                {% for item in diff['changed'] %}
-                    <div class="changed">{{ item }}</div>
-                {% endfor %}
-            </div>
+            {% for path, change in diff.items() %}
+                <div class="diff-row">
+                    <div class="diff-section">
+                        <div class="path-title">{{ path }}</div>
+                        {% if change.left %}
+                            <div class="{{ 'removed' if change.right is none else 'changed' }}">
+                                {{ change.left | safe }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="diff-section">
+                        <div class="path-title">{{ path }}</div>
+                        {% if change.right %}
+                            <div class="{{ 'added' if change.left is none else 'changed' }}">
+                                {{ change.right | safe }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No differences found.</p>
         {% endfor %}
     </div>
 </body>
 </html>
-
 
 
 

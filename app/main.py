@@ -8,43 +8,25 @@ app = Flask(__name__)
 polish_api_data = None
 santander_api_data = []
 
-def categorize_differences(diff):
-    categorized_diff = {
-        'added': [],
-        'removed': [],
-        'changed': []
-    }
-
-    if 'dictionary_item_added' in diff:
-        categorized_diff['added'].extend([str(item) for item in diff['dictionary_item_added']])
-    
-    if 'dictionary_item_removed' in diff:
-        categorized_diff['removed'].extend([str(item) for item in diff['dictionary_item_removed']])
-    
-    if 'values_changed' in diff:
-        categorized_diff['changed'].extend([str(item) for item in diff['values_changed']])
-
-    # Add more categorization as necessary based on the output of DeepDiff
-
-    return categorized_diff
-
-
 def load_yaml_from_file(file):
     if file:
         return yaml.safe_load(file)
 
-def compare_apis(polish_api, santander_api):
-    differences = DeepDiff(polish_api, santander_api, ignore_order=True)
+def find_differences(dict1, dict2, base_path=''):
+    differences = {}
+    for key in dict1:
+        if key not in dict2:
+            differences[base_path + key] = {'left': dict1[key], 'right': None}
+        elif dict1[key] != dict2[key]:
+            if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
+                sub_diffs = find_differences(dict1[key], dict2[key], base_path + key + '.')
+                differences.update(sub_diffs)
+            else:
+                differences[base_path + key] = {'left': dict1[key], 'right': dict2[key]}
+    for key in dict2:
+        if key not in dict1:
+            differences[base_path + key] = {'left': None, 'right': dict2[key]}
     return differences
-
-def json_serializable_diff(diff_dict):
-    """ Recursively convert complex objects in diff_dict to serializable formats. """
-    if isinstance(diff_dict, dict):
-        for key, value in diff_dict.items():
-            diff_dict[key] = json_serializable_diff(value)
-    elif not isinstance(diff_dict, (int, float, str, list, dict, bool, type(None))):
-        return str(diff_dict)  # Convert non-serializable types to string
-    return diff_dict
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -56,6 +38,7 @@ def index():
         if polish_api_file:
             polish_api_data = load_yaml_from_file(polish_api_file)
 
+        santander_api_data.clear()
         for file in santander_files:
             if file:
                 santander_api_data.append(load_yaml_from_file(file))
@@ -66,15 +49,16 @@ def index():
 
 @app.route('/display')
 def display():
-    formatted_differences = []
+    all_differences = []
     for santander_api in santander_api_data:
-        diff = compare_apis(polish_api_data, santander_api)
-        formatted_differences.append(categorize_differences(diff))
-    print(formatted_differences)
-    return render_template('display.html', differences=formatted_differences)
+        diffs = find_differences(polish_api_data, santander_api)
+        all_differences.append(diffs)
+
+    return render_template('display.html', differences=all_differences)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
