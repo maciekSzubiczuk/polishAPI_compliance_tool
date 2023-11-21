@@ -3,10 +3,6 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        .container {
-            width: 80%;
-            margin: auto;
-        }
         .diff-row {
             display: flex;
             margin-bottom: 20px;
@@ -21,14 +17,21 @@
         .diff-section:last-child {
             border-right: none;
         }
-        .added { background-color: lightgreen; }
-        .removed { background-color: lightcoral; }
-        .changed { background-color: lightblue; }
         .path-title {
             font-weight: bold;
             margin-bottom: 10px;
         }
-        /* Additional styling */
+        .yaml-content {
+            white-space: pre; 
+            font-family: monospace; 
+            background-color: #f8f8f8; 
+            border-radius: 5px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        .added { background-color: lightgreen; }
+        .removed { background-color: lightcoral; }
+        .changed { background-color: lightblue; }
     </style>
 </head>
 <body>
@@ -41,7 +44,7 @@
                         <div class="path-title">{{ path }}</div>
                         {% if change.left %}
                             <div class="{{ 'removed' if change.right is none else 'changed' }}">
-                                {{ change.left | safe }}
+                                <pre class="yaml-content">{{ change.left | safe }}</pre>
                             </div>
                         {% endif %}
                     </div>
@@ -49,7 +52,7 @@
                         <div class="path-title">{{ path }}</div>
                         {% if change.right %}
                             <div class="{{ 'added' if change.left is none else 'changed' }}">
-                                {{ change.right | safe }}
+                                <pre class="yaml-content">{{ change.right | safe }}</pre>
                             </div>
                         {% endif %}
                     </div>
@@ -61,6 +64,7 @@
     </div>
 </body>
 </html>
+
 
 
 

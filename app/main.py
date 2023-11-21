@@ -52,7 +52,10 @@ def display():
     all_differences = []
     for santander_api in santander_api_data:
         diffs = find_differences(polish_api_data, santander_api)
-        all_differences.append(diffs)
+        formatted_diffs = {path: {'left': yaml.dump(change['left'], default_flow_style=False, sort_keys=False) if change['left'] else '',
+                                  'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else ''}
+                           for path, change in diffs.items()}
+        all_differences.append(formatted_diffs)
 
     return render_template('display.html', differences=all_differences)
 
