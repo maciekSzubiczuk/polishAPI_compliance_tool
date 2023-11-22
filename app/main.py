@@ -8,6 +8,58 @@ app = Flask(__name__)
 polish_api_data = None
 santander_api_data = []
 
+api_sections = {
+    'PIS': '/v2_1_1.1/payments',
+    'CAF': '/v2_1_1.1/confirmation',
+    'AIS': '/v2_1_1.1/accounts',
+    'AS': '/v2_1_1.1/auth'
+}
+
+
+def categorize_paths(paths, api_sections):
+    categorized_paths = {section: {} for section in api_sections}
+    for path, details in paths.items():
+        for section, pattern in api_sections.items():
+            if path.startswith(pattern):
+                categorized_paths[section][path] = details
+                break
+    return categorized_paths
+
+def find_differences_by_section(polish_api_data, santander_api_data, api_sections):
+    differences_by_section = {section: {} for section in api_sections}
+
+    polish_categorized = categorize_paths(polish_api_data.get('paths', {}), api_sections)
+    santander_categorized = categorize_paths(santander_api_data.get('paths', {}), api_sections)
+
+    for section in api_sections:
+        differences_by_section[section] = find_differences(
+            polish_categorized[section], 
+            santander_categorized[section]
+        )
+
+    return differences_by_section
+
+
+
+def merge_api_data(api_files):
+    merged_data = {}
+    for api_file in api_files:
+        api_data = load_yaml_from_file(api_file)
+        for key, value in api_data.items():
+            if key in merged_data:
+                if isinstance(merged_data[key], dict) and isinstance(value, dict):
+                    merged_data[key].update(value)
+                elif isinstance(merged_data[key], list) and isinstance(value, list):
+                    merged_data[key].extend(value)
+                else:
+                    # Handle other types or conflicts according to your needs
+                    pass
+            else:
+                merged_data[key] = value
+    return merged_data
+
+
+
 def load_yaml_from_file(file):
     if file:
         return yaml.safe_load(file)
@@ -85,20 +137,22 @@ def index():
         if polish_api_file:
             polish_api_data = load_yaml_from_file(polish_api_file)
 
-        santander_api_data.clear()
-        for file in santander_files:
-            if file:
-                santander_api_data.append(load_yaml_from_file(file))
+        if santander_files:
+            santander_api_data = merge_api_data(santander_files)
 
         return redirect(url_for('display'))
 
     return render_template('upload.html')
 
+
 @app.route('/display')
 def display():
-    all_differences = []
-    for santander_api in santander_api_data:
-        diffs = find_differences(polish_api_data, santander_api)
+    if not polish_api_data or not santander_api_data:
+        return render_template('display.html', differences_by_section={})
+
+    differences_by_section = find_differences_by_section(polish_api_data, santander_api_data, api_sections)
+    formatted_diffs_by_section = {}
+    for section, diffs in differences_by_section.items():
         formatted_diffs = {}
         for path, change in diffs.items():
             summary = generate_summary(change)
@@ -107,9 +161,10 @@ def display():
                 'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
                 'summary': summary
             }
-        all_differences.append(formatted_diffs)
+        formatted_diffs_by_section[section] = formatted_diffs
 
-    return render_template('display.html', differences=all_differences)
+    return render_template('display.html', differences_by_section=formatted_diffs_by_section)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
