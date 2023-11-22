@@ -12,6 +12,20 @@ def load_yaml_from_file(file):
     if file:
         return yaml.safe_load(file)
 
+def generate_summary(change):
+    summary = []
+    if 'left' in change and change['left'] is None:
+        # If the left side is None, it means the item was added
+        summary.append('Added: ' + str(change['right']))
+    elif 'right' in change and change['right'] is None:
+        # If the right side is None, it means the item was deleted
+        summary.append('Deleted: ' + str(change['left']))
+    else:
+        # Changes that are not add or delete can be treated as modifications
+        summary.append('Modified: From ' + str(change['left']) + ' to ' + str(change['right']))
+    return summary
+
+
 def find_differences(dict1, dict2, base_path=''):
     differences = {}
     for key in dict1:
@@ -27,6 +41,23 @@ def find_differences(dict1, dict2, base_path=''):
         if key not in dict1:
             differences[base_path + key] = {'left': None, 'right': dict2[key]}
     return differences
+
+def find_pis_differences(polish_api_data, santander_api_data):
+    pis_differences = {}
+    polish_paths = polish_api_data.get('paths', {})
+    santander_paths = santander_api_data.get('paths', {})
+
+    # Filter for paths with 'x-swagger-router-controller: pis'
+    for path, details in polish_paths.items():
+        if details.get('x-swagger-router-controller') == 'pis':
+            santander_details = santander_paths.get(path)
+            if santander_details and details != santander_details:
+                pis_differences[path] = {
+                    'polish_api': details,
+                    'santander_api': santander_details
+                }
+    
+    return pis_differences
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -52,9 +83,14 @@ def display():
     all_differences = []
     for santander_api in santander_api_data:
         diffs = find_differences(polish_api_data, santander_api)
-        formatted_diffs = {path: {'left': yaml.dump(change['left'], default_flow_style=False, sort_keys=False) if change['left'] else '',
-                                  'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else ''}
-                           for path, change in diffs.items()}
+        formatted_diffs = {}
+        for path, change in diffs.items():
+            summary = generate_summary(change)
+            formatted_diffs[path] = {
+                'left': yaml.dump(change['left'], default_flow_style=False, sort_keys=False) if change['left'] else '',
+                'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
+                'summary': summary
+            }
         all_differences.append(formatted_diffs)
 
     return render_template('display.html', differences=all_differences)
