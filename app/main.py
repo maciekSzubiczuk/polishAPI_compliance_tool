@@ -14,16 +14,28 @@ def load_yaml_from_file(file):
 
 def generate_summary(change):
     summary = []
+
+    def format_list(value):
+        return '\n- ' + '\n- '.join([str(item) for item in value])
+
     if 'left' in change and change['left'] is None:
-        # If the left side is None, it means the item was added
-        summary.append('Added: ' + str(change['right']))
+        if isinstance(change['right'], list):
+            summary.append('Added:\n' + format_list(change['right']))
+        else:
+            summary.append('Added:\n- ' + str(change['right']))
     elif 'right' in change and change['right'] is None:
-        # If the right side is None, it means the item was deleted
-        summary.append('Deleted: ' + str(change['left']))
+        if isinstance(change['left'], list):
+            summary.append('Deleted:\n' + format_list(change['left']))
+        else:
+            summary.append('Deleted:\n- ' + str(change['left']))
     else:
-        # Changes that are not add or delete can be treated as modifications
-        summary.append('Modified: From ' + str(change['left']) + ' to ' + str(change['right']))
+        left = format_list(change['left']) if isinstance(change['left'], list) else '- ' + str(change['left'])
+        right = format_list(change['right']) if isinstance(change['right'], list) else '- ' + str(change['right'])
+        summary.append('Modified:\nFrom:' + left + '\nTo:' + right)
+    
     return summary
+
+
 
 
 def find_differences(dict1, dict2, base_path=''):

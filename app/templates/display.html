@@ -67,11 +67,9 @@
                     <!-- Summary Section (Below Comparison Sections) -->
                     <div class="summary-section">
                         <h4>Summary for {{ path }}</h4>
-                        <ul>
-                            {% for statement in change.summary %}
-                                <li>{{ statement }}</li>
-                            {% endfor %}
-                        </ul>
+                        {% for statement in change.summary %}
+                            <pre>{{ statement }}</pre> <!-- Use <pre> to preserve formatting -->
+                        {% endfor %}
                     </div>
                 </div>
             {% endfor %}
