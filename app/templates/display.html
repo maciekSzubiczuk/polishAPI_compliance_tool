@@ -3,7 +3,7 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        /* Existing styles... */
+        /* Your existing styles */
         .diff-row {
             border: 1px solid #ddd;
             margin-bottom: 20px;
@@ -58,7 +58,6 @@
                 <h3>{{ section }} Differences</h3>
                 {% for path, change in diffs.items() %}
                     <div class="diff-row">
-                        <!-- Comparison Sections (Left and Right) -->
                         <div class="diff-sections">
                             <div class="diff-section diff-section-left">
                                 <div class="path-title">{{ path }}</div>
@@ -77,7 +76,6 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <!-- Summary Section (Below Comparison Sections) -->
                         <div class="summary-section">
                             <h4>Summary for {{ path }}</h4>
                             {% for statement in change.summary %}
@@ -92,8 +90,8 @@
         {% endif %}
     </div>
 </body>
-
 </html>
+
 
 
 

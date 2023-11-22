@@ -15,6 +15,10 @@ api_sections = {
     'AS': '/v2_1_1.1/auth'
 }
 
+def find_definitions_differences(polish_api_data, santander_api_data):
+    polish_definitions = polish_api_data.get('definitions', {})
+    santander_definitions = santander_api_data.get('definitions', {})
+    return find_differences(polish_definitions, santander_definitions)
 
 def categorize_paths(paths, api_sections):
     categorized_paths = {section: {} for section in api_sections}
@@ -50,13 +54,17 @@ def merge_api_data(api_files):
                 if isinstance(merged_data[key], dict) and isinstance(value, dict):
                     merged_data[key].update(value)
                 elif isinstance(merged_data[key], list) and isinstance(value, list):
-                    merged_data[key].extend(value)
+                    # Extend the list with unique items
+                    for item in value:
+                        if item not in merged_data[key]:
+                            merged_data[key].append(item)
                 else:
                     # Handle other types or conflicts according to your needs
                     pass
             else:
                 merged_data[key] = value
     return merged_data
+
 
 
 
@@ -145,13 +153,21 @@ def index():
     return render_template('upload.html')
 
 
+# In your Flask app's display route
+
 @app.route('/display')
 def display():
     if not polish_api_data or not santander_api_data:
         return render_template('display.html', differences_by_section={})
 
+    # Find differences by API section
     differences_by_section = find_differences_by_section(polish_api_data, santander_api_data, api_sections)
-    formatted_diffs_by_section = {}
+
+    # Find differences in definitions
+    definitions_differences = find_definitions_differences(polish_api_data, santander_api_data)
+    
+    # Combine all differences and generate summaries
+    all_differences = {}
     for section, diffs in differences_by_section.items():
         formatted_diffs = {}
         for path, change in diffs.items():
@@ -161,9 +177,21 @@ def display():
                 'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
                 'summary': summary
             }
-        formatted_diffs_by_section[section] = formatted_diffs
+        all_differences[section] = formatted_diffs
 
-    return render_template('display.html', differences_by_section=formatted_diffs_by_section)
+    # Add definitions differences with summary
+    formatted_definitions_diffs = {}
+    for key, change in definitions_differences.items():
+        summary = generate_summary(change)
+        formatted_definitions_diffs[key] = {
+            'left': yaml.dump(change['left'], default_flow_style=False, sort_keys=False) if change['left'] else '',
+            'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
+            'summary': summary
+        }
+    all_differences['Definitions'] = formatted_definitions_diffs
+
+    return render_template('display.html', differences_by_section=all_differences)
+
 
 
 if __name__ == '__main__':
