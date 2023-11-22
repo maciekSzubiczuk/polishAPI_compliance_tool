@@ -5,10 +5,12 @@
     <style>
         /* Existing styles... */
         .diff-row {
-            display: flex;
-            margin-bottom: 20px;
             border: 1px solid #ddd;
+            margin-bottom: 20px;
             padding: 10px;
+        }
+        .diff-sections {
+            display: flex;
         }
         .diff-section {
             flex: 1;
@@ -32,6 +34,9 @@
             font-family: monospace; 
         }
         /* Color styles... */
+        .summary-section {
+            margin-top: 10px; /* Add space between the comparison and summary sections */
+        }
     </style>
 </head>
 <body>
@@ -40,30 +45,26 @@
         {% for diff in differences %}
             {% for path, change in diff.items() %}
                 <div class="diff-row">
-                    <div class="diff-section diff-section-left">
-                        <div class="path-title">{{ path }}</div>
-                        {% if change.left %}
-                            <div class="yaml-content-wrapper {{ 'removed' if change.right is none else 'changed' }}">
-                                <pre class="yaml-content">{{ change.left | safe }}</pre>
-                            </div>
-                        {% else %}
-                            <div class="yaml-content-wrapper {{ 'added' }}">
-                                <pre class="yaml-content">No equivalent in PolishAPI</pre>
-                            </div>
-                        {% endif %}
+                    <!-- Comparison Sections (Left and Right) -->
+                    <div class="diff-sections">
+                        <div class="diff-section diff-section-left">
+                            <div class="path-title">{{ path }}</div>
+                            {% if change.left %}
+                                <div class="yaml-content-wrapper {{ 'removed' if change.right is none else 'changed' }}">
+                                    <pre class="yaml-content">{{ change.left | safe }}</pre>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="diff-section diff-section-right">
+                            <div class="path-title">{{ path }}</div>
+                            {% if change.right %}
+                                <div class="yaml-content-wrapper {{ 'added' if change.left is none else 'changed' }}">
+                                    <pre class="yaml-content">{{ change.right | safe }}</pre>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="diff-section diff-section-right">
-                        <div class="path-title">{{ path }}</div>
-                        {% if change.right %}
-                            <div class="yaml-content-wrapper {{ 'added' if change.left is none else 'changed' }}">
-                                <pre class="yaml-content">{{ change.right | safe }}</pre>
-                            </div>
-                        {% else %}
-                            <div class="yaml-content-wrapper {{ 'removed' }}">
-                                <pre class="yaml-content">No equivalent in Santander API</pre>
-                            </div>
-                        {% endif %}
-                    </div>
+                    <!-- Summary Section (Below Comparison Sections) -->
                     <div class="summary-section">
                         <h4>Summary for {{ path }}</h4>
                         <ul>
@@ -80,6 +81,7 @@
     </div>
 </body>
 </html>
+
 
 
 
