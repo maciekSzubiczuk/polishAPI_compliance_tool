@@ -33,9 +33,20 @@
             white-space: pre; 
             font-family: monospace; 
         }
-        /* Color styles... */
+        .added-summary {
+            background-color: lightgreen;
+        }
+        .deleted-summary {
+            background-color: lightcoral;
+        }
+        .modified-summary {
+            background-color: lightblue;
+        }
         .summary-section {
-            margin-top: 10px; /* Add space between the comparison and summary sections */
+            margin-top: 10px;
+        }
+        .summary-section pre {
+            white-space: pre-wrap; /* Wrap text */
         }
     </style>
 </head>
@@ -68,7 +79,7 @@
                     <div class="summary-section">
                         <h4>Summary for {{ path }}</h4>
                         {% for statement in change.summary %}
-                            <pre>{{ statement }}</pre> <!-- Use <pre> to preserve formatting -->
+                            <pre class="{{ 'added-summary' if 'Added:' in statement else 'deleted-summary' if 'Deleted:' in statement else 'modified-summary' }}">{{ statement }}</pre>
                         {% endfor %}
                     </div>
                 </div>

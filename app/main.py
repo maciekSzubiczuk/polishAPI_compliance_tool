@@ -15,28 +15,32 @@ def load_yaml_from_file(file):
 def generate_summary(change):
     summary = []
 
-    def format_list(value):
-        return '\n- ' + '\n- '.join([str(item) for item in value])
+    def format_value(value, indent=0):
+        if isinstance(value, dict):
+            return format_dict(value, indent)
+        elif isinstance(value, list):
+            return format_list(value, indent)
+        else:
+            return ' ' * indent + str(value)
+
+    def format_dict(d, indent=0):
+        formatted = []
+        for key, value in d.items():
+            formatted.append(' ' * indent + f"{key}:")
+            formatted.append(format_value(value, indent + 2))
+        return '\n'.join(formatted)
+
+    def format_list(l, indent=0):
+        return '\n'.join([' ' * indent + f"- {format_value(item, indent + 2)}" for item in l])
 
     if 'left' in change and change['left'] is None:
-        if isinstance(change['right'], list):
-            summary.append('Added:\n' + format_list(change['right']))
-        else:
-            summary.append('Added:\n- ' + str(change['right']))
+        summary.append('Added:\n' + format_value(change['right']))
     elif 'right' in change and change['right'] is None:
-        if isinstance(change['left'], list):
-            summary.append('Deleted:\n' + format_list(change['left']))
-        else:
-            summary.append('Deleted:\n- ' + str(change['left']))
+        summary.append('Deleted:\n' + format_value(change['left']))
     else:
-        left = format_list(change['left']) if isinstance(change['left'], list) else '- ' + str(change['left'])
-        right = format_list(change['right']) if isinstance(change['right'], list) else '- ' + str(change['right'])
-        summary.append('Modified:\nFrom:' + left + '\nTo:' + right)
-    
+        summary.append('Modified:\nFrom:\n' + format_value(change['left']) + '\nTo:\n' + format_value(change['right']))
+
     return summary
-
-
-
 
 def find_differences(dict1, dict2, base_path=''):
     differences = {}
