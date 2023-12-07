@@ -27,11 +27,16 @@
             border-radius: 5px;
             padding: 10px;
             overflow-x: auto;
-            background-color: #f8f8f8; 
+            background-color: #f8f8f8;
         }
         .yaml-content {
-            white-space: pre; 
-            font-family: monospace; 
+            white-space: pre;
+            font-family: monospace;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-x: auto;
         }
         .added-summary {
             background-color: lightgreen;
@@ -48,6 +53,24 @@
         .summary-section pre {
             white-space: pre-wrap; /* Wrap text */
         }
+        .toggle-button {
+            background-color: #f1f1f1;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+        .title-row {
+            display: flex;
+            align-items: center;
+        }
+        .content {
+            display: block; /* Initially show the content */
+        }
+        .hidden {
+            display: none; /* Hide content */
+        }
     </style>
 </head>
 <body>
@@ -55,42 +78,65 @@
         <h2>Comparison Results</h2>
         {% if differences_by_section %}
             {% for section, diffs in differences_by_section.items() %}
-                <h3>{{ section }} Differences</h3>
-                {% for path, change in diffs.items() %}
-                    <div class="diff-row">
-                        <div class="diff-sections">
-                            <div class="diff-section diff-section-left">
-                                <div class="path-title">{{ path }}</div>
-                                {% if change.left %}
-                                    <div class="yaml-content-wrapper {{ 'removed' if change.right is none else 'changed' }}">
-                                        <pre class="yaml-content">{{ change.left | safe }}</pre>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="diff-section diff-section-right">
-                                <div class="path-title">{{ path }}</div>
-                                {% if change.right %}
-                                    <div class="yaml-content-wrapper {{ 'added' if change.left is none else 'changed' }}">
-                                        <pre class="yaml-content">{{ change.right | safe }}</pre>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="summary-section">
-                            <h4>Summary for {{ path }}</h4>
-                            {% for statement in change.summary %}
-                                <div style="white-space: pre-wrap;">{{ statement | safe }}</div>
-                            {% endfor %}
-                        </div>
+                <div class="section">
+                    <div class="title-row">
+                        <button class="toggle-button" onclick="toggleSection(this)">▼</button>
+                        <h3>{{ section }} Differences</h3>
                     </div>
-                {% endfor %}
+                    <div class="content">
+                        {% for path, change in diffs.items() %}
+                            <div class="diff-row">
+                                <div class="diff-sections">
+                                    <div class="diff-section diff-section-left">
+                                        <div class="path-title">{{ path }}</div>
+                                        {% if change.left %}
+                                            <div class="yaml-content-wrapper {{ 'removed' if change.right is none else 'changed' }}">
+                                                <pre class="yaml-content">{{ change.left | safe }}</pre>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="diff-section diff-section-right">
+                                        <div class="path-title">{{ path }}</div>
+                                        {% if change.right %}
+                                            <div class="yaml-content-wrapper {{ 'added' if change.left is none else 'changed' }}">
+                                                <pre class="yaml-content">{{ change.right | safe }}</pre>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="summary-section">
+                                    {% set last_part = path.split('/')[-1] %}
+                                    <h4>Summary for {{ last_part }}</h4>
+                                    {% for statement in change.summary %}
+                                        <div style="white-space: pre-wrap;">{{ statement | safe }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             {% endfor %}
         {% else %}
             <p>No differences found.</p>
         {% endif %}
     </div>
+    <script>
+        function toggleSection(button) {
+            var content = button.parentNode.nextElementSibling; // Get the next sibling of the button's parent (the title row)
+            if (content.style.display === "none") {
+                content.style.display = "block";
+                button.innerHTML = "▼"; // Arrow pointing down
+            } else {
+                content.style.display = "none";
+                button.innerHTML = "►"; // Arrow pointing right
+            }
+        }
+    </script>
 </body>
 </html>
+
+
+
 
 
 
