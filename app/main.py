@@ -75,32 +75,53 @@ def load_yaml_from_file(file):
 def generate_summary(change):
     summary = []
 
-    def format_value(value, indent=0):
+    def format_value(value, indent=0, style=""):
         if isinstance(value, dict):
-            return format_dict(value, indent)
+            return format_dict(value, indent, style)
         elif isinstance(value, list):
-            return format_list(value, indent)
+            return format_list(value, indent, style)
         else:
-            return ' ' * indent + str(value)
+            return ' ' * indent + f'<span style="{style}">{value}</span>'
 
-    def format_dict(d, indent=0):
+    def format_dict(d, indent=0, style=""):
         formatted = []
         for key, value in d.items():
-            formatted.append(' ' * indent + f"{key}:")
-            formatted.append(format_value(value, indent + 2))
+            formatted.append(' ' * indent + f'<span style="{style}">{key}:</span>')
+            formatted.append(format_value(value, indent + 2, style))
         return '\n'.join(formatted)
 
-    def format_list(l, indent=0):
-        return '\n'.join([' ' * indent + f"- {format_value(item, indent + 2)}" for item in l])
+    def format_list(l, indent=0, style=""):
+        return '\n'.join([' ' * indent + f'- {format_value(item, indent + 2, style)}' for item in l])
+
+    def diff_and_format(left, right, indent=0):
+        # Process additions and deletions
+        additions = [item for item in right if item not in left]
+        deletions = [item for item in left if item not in right]
+        
+        formatted = []
+        formatted.append("From:")
+        for item in left:
+            style = "background-color: red;" if item in deletions else ""
+            formatted.append(f'<span style="{style}">{format_value(item, indent)}</span>')
+        formatted.append("To:")
+        for item in right:
+            style = "background-color: green;" if item in additions else ""
+            formatted.append(f'<span style="{style}">{format_value(item, indent)}</span>')
+        return '\n'.join(formatted)
 
     if 'left' in change and change['left'] is None:
-        summary.append('Added:\n' + format_value(change['right']))
+        added_style = "background-color: lightgreen;"
+        summary.append('Added:\n' + format_value(change['right'], 0, added_style))
     elif 'right' in change and change['right'] is None:
-        summary.append('Deleted:\n' + format_value(change['left']))
+        deleted_style = "background-color: lightcoral;"
+        summary.append('Deleted:\n' + format_value(change['left'], 0, deleted_style))
     else:
-        summary.append('Modified:\nFrom:\n' + format_value(change['left']) + '\nTo:\n' + format_value(change['right']))
+        modified_summary = diff_and_format(change['left'], change['right'])
+        summary.append(modified_summary)
 
     return summary
+
+
 
 def find_differences(dict1, dict2, base_path=''):
     differences = {}
