@@ -23,13 +23,15 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
-        .yaml-content-wrapper {
+        .yaml-content-wrapper,
+        .summary-content-wrapper {
             border-radius: 5px;
             padding: 10px;
             overflow-x: auto;
             background-color: #f8f8f8;
         }
-        .yaml-content {
+        .yaml-content,
+        .summary-content {
             white-space: pre;
             font-family: monospace;
             background-color: #f3f3f3;
@@ -49,9 +51,6 @@
         }
         .summary-section {
             margin-top: 10px;
-        }
-        .summary-section pre {
-            white-space: pre-wrap; /* Wrap text */
         }
         .toggle-button {
             background-color: #f1f1f1;
@@ -108,7 +107,9 @@
                                     {% set last_part = path.split('/')[-1] %}
                                     <h4>Summary for {{ last_part }}</h4>
                                     {% for statement in change.summary %}
-                                        <div style="white-space: pre-wrap;">{{ statement | safe }}</div>
+                                        <div class="summary-content-wrapper">
+                                            <pre class="summary-content">{{ statement | safe }}</pre>
+                                        </div>
                                     {% endfor %}
                                 </div>
                             </div>
@@ -134,21 +135,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
