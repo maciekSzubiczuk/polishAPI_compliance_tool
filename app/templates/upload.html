@@ -25,16 +25,23 @@
             text-align: center;
             margin-top: 20px;
         }
+        .form-control-file {
+            margin-top: 10px; /* Consistent margin for file inputs */
+        }
     </style>
     <script>
         function addFileInput() {
             var newInput = document.createElement("input");
             newInput.type = "file";
             newInput.name = "santander_files";
-            newInput.className = "form-control-file mt-2";
+            newInput.className = "form-control-file";
 
             var addButton = document.getElementById("add-file-button");
-            addButton.parentNode.insertBefore(newInput, addButton); // Insert the new input before the button
+            var lastInput = document.getElementById("santander-upload-section").lastElementChild;
+            if(lastInput.tagName === "INPUT") {
+                lastInput = lastInput.nextSibling; // If the last child is an input, we skip to the next sibling (to maintain the structure)
+            }
+            document.getElementById("santander-upload-section").insertBefore(newInput, lastInput);
         }
     </script>
 </head>
@@ -52,7 +59,8 @@
                 <!-- Santander API Implementation Upload -->
                 <div class="upload-section" id="santander-upload-section">
                     <h2>Upload Santander API Implementation</h2>
-                    <input type="file" name="santander_files" class="form-control-file"><br>
+                    <input type="file" name="santander_files" class="form-control-file">
+                    <!-- The Add Another File button is moved outside the santander-upload-section to prevent margin issues -->
                     <button type="button" id="add-file-button" class="btn btn-secondary mt-2" onclick="addFileInput()">Add Another File</button>
                 </div>
             </div>
@@ -69,3 +77,4 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
+
