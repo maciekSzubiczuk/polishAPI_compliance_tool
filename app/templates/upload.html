@@ -2,16 +2,24 @@
 <html>
 <head>
     <title>API YAML File Upload</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
-        .container {
+        body {
+            background-color: white;
+        }
+        .upload-container {
             display: flex;
             justify-content: space-between;
+            padding: 20px;
         }
         .upload-section {
-            width: 45%;
-            padding: 10px;
+            flex: 1;
+            margin: 0 10px;
+            background-color: #f7fff7; /* Light green background */
             border: 1px solid #ddd;
-            margin: 10px;
+            padding: 20px;
+            border-radius: 5px;
         }
         .button-section {
             text-align: center;
@@ -23,36 +31,41 @@
             var newInput = document.createElement("input");
             newInput.type = "file";
             newInput.name = "santander_files";
+            newInput.className = "form-control-file mt-2";
 
             var addButton = document.getElementById("add-file-button");
-            document.getElementById("santander-upload-section").insertBefore(newInput, addButton);
-            document.getElementById("santander-upload-section").insertBefore(document.createElement("br"), addButton);
+            addButton.parentNode.insertBefore(newInput, addButton); // Insert the new input before the button
         }
     </script>
 </head>
 <body>
-    <form action="/" method="post" enctype="multipart/form-data">
-        <div class="container">
-            <!-- Polish API Specification Upload -->
-            <div class="upload-section">
-                <h2>Upload Polish API Specification</h2>
-                <input type="file" name="polishapi_file">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">API YAML File Upload</h1>
+        <form action="/" method="post" enctype="multipart/form-data">
+            <div class="upload-container">
+                <!-- Polish API Specification Upload -->
+                <div class="upload-section">
+                    <h2>Upload Polish API Specification</h2>
+                    <input type="file" name="polishapi_file" class="form-control-file">
+                </div>
+
+                <!-- Santander API Implementation Upload -->
+                <div class="upload-section" id="santander-upload-section">
+                    <h2>Upload Santander API Implementation</h2>
+                    <input type="file" name="santander_files" class="form-control-file"><br>
+                    <button type="button" id="add-file-button" class="btn btn-secondary mt-2" onclick="addFileInput()">Add Another File</button>
+                </div>
             </div>
 
-            <!-- Santander API Implementation Upload -->
-            <div class="upload-section" id="santander-upload-section">
-                <h2>Upload Santander API Implementation</h2>
-                <input type="file" name="santander_files"><br>
-                <button type="button" id="add-file-button" onclick="addFileInput()">Add Another File</button>
+            <div class="button-section">
+                <input type="submit" value="Check Compliance" class="btn btn-primary mt-3">
             </div>
-        </div>
+        </form>
+    </div>
 
-        <div class="button-section">
-            <input type="submit" value="Check Compliance">
-        </div>
-    </form>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
-
-
-
