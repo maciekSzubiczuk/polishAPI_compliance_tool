@@ -28,6 +28,12 @@
         .form-control-file {
             margin-top: 10px; /* Consistent margin for file inputs */
         }
+
+        h1 {
+            color: #004d40; /* Black with a green tinge */
+            text-align: center;
+            margin-bottom: 20px;
+        }
     </style>
     <script>
         function addFileInput() {
@@ -47,7 +53,7 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">API YAML File Upload</h1>
+        <h1>API YAML File Upload</h1>
         <form action="/" method="post" enctype="multipart/form-data">
             <div class="upload-container">
                 <!-- Polish API Specification Upload -->
@@ -60,7 +66,6 @@
                 <div class="upload-section" id="santander-upload-section">
                     <h2>Upload Santander API Implementation</h2>
                     <input type="file" name="santander_files" class="form-control-file">
-                    <!-- The Add Another File button is moved outside the santander-upload-section to prevent margin issues -->
                     <button type="button" id="add-file-button" class="btn btn-secondary mt-2" onclick="addFileInput()">Add Another File</button>
                 </div>
             </div>
@@ -77,4 +82,3 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
-

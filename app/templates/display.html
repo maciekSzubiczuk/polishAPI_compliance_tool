@@ -3,26 +3,75 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        /* Your existing styles */
+        /* Reset some styles for better cross-browser consistency */
+        body, h1, h2, h3, h4, button, pre {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9; /* Light grey background for the body */
+            color: #333; /* Dark grey text for better readability */
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center; /* Aligns items vertically center */
+            font-size: 1.5em; /* Larger font size for titles */
+        }
+
+        .title-row h3 {
+            margin-left: 10px; /* Adds spacing between button and title */
+            color: #004d40; /* Black with a slight green tinge */
+        }
+
+        h1, h2, h3, h4 {
+            color: #004d40; /* Black with a slight green tinge for all headings */
+        }
+
+        .summary-section h4 {
+            color: #000; /* Pure black for summary headings */
+            font-weight: bold; /* Makes the font bold */
+            text-shadow: 1px 1px 2px #888; /* Subtle shadow for a 3D effect */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white; /* White background for the container */
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            border-radius: 5px; /* Rounded corners */
+        }
+
+        /* Adjusting .diff-row for better spacing and visibility */
         .diff-row {
             border: 1px solid #ddd;
             margin-bottom: 20px;
-            padding: 10px;
+            padding: 15px;
+            background-color: #f7fff7; /* Light green background for diff rows */
         }
+
         .diff-sections {
             display: flex;
         }
+
         .diff-section {
             flex: 1;
             padding: 10px;
         }
+
         .diff-section-left {
             border-right: 1px solid #ddd;
         }
+
         .path-title {
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         .yaml-content-wrapper,
         .summary-content-wrapper {
             border-radius: 5px;
@@ -30,6 +79,7 @@
             overflow-x: auto;
             background-color: #f8f8f8;
         }
+
         .yaml-content,
         .summary-content {
             white-space: pre;
@@ -40,50 +90,66 @@
             padding: 10px;
             overflow-x: auto;
         }
+
         .added-summary {
             background-color: lightgreen;
         }
+
         .deleted-summary {
             background-color: lightcoral;
         }
+
         .modified-summary {
             background-color: lightblue;
         }
+
         .summary-section {
             margin-top: 10px;
         }
+
         .toggle-button {
-            background-color: #f1f1f1;
+            background-color: #27ae60; /* Green background for buttons */
             border: none;
+            color: white; /* White text for buttons */
             cursor: pointer;
-            padding: 5px;
+            padding: 10px 15px;
             font-size: 1em;
-            margin-right: 10px;
+            border-radius: 4px; /* Rounded corners for buttons */
+            transition: background-color 0.3s; /* Smooth background color transition */
         }
-        .title-row {
-            display: flex;
-            align-items: center;
+
+        .toggle-button:hover {
+            background-color: #2ecc71; /* Slightly lighter green on hover */
         }
-        .content {
-            display: none; /* Hide content by default */
-        }
-        .hidden {
-            display: none; /* Hide content */
-        }
+
         .highlight-keyword { /* New class for highlighting keywords */
             font-size: 1.2em; /* Larger font size */
             font-weight: bold;
+        }
+
+        /* Additional styles for better readability and spacing */
+        .diff-sections, .summary-section {
+            margin-bottom: 20px; /* Added margin for better spacing */
+        }
+
+        .content {
+            display: none; /* Hide content by default */
+        }
+
+        .hidden {
+            display: none; /* Hide content */
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <h1>API Compliance Check</h1>
         <h2>Comparison Results</h2>
         {% if differences_by_section %}
             {% for section, diffs in differences_by_section.items() %}
                 <div class="section">
                     <div class="title-row">
-                        <button class="toggle-button" onclick="toggleSection(this)">►</button> <!-- Arrow pointing right -->
+                        <button class="toggle-button" onclick="toggleSection(this)">►</button>
                         <h3>{{ section }} Differences</h3>
                     </div>
                     <div class="content">
@@ -149,7 +215,6 @@
                 button.innerHTML = "►"; // Arrow pointing right
             }
         }
-
     </script>
 </body>
 </html>

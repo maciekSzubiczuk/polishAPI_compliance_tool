@@ -4,7 +4,7 @@ from deepdiff import DeepDiff
 
 app = Flask(__name__)
 
-# Temporary storage for uploaded file contents
+# Storage for uploaded file contents
 polish_api_data = None
 santander_api_data = []
 
@@ -59,7 +59,6 @@ def merge_api_data(api_files):
                         if item not in merged_data[key]:
                             merged_data[key].append(item)
                 else:
-                    # Handle other types or conflicts according to your needs
                     pass
             else:
                 merged_data[key] = value
@@ -104,8 +103,6 @@ def generate_summary(change):
                 return format_list(value, indent + 2, style)
             else:
                 return f'<span style="{style}">{value}</span>'
-
-        # Handling different types for 'left'
         if isinstance(left, list):
             deletions = [item for item in left if item not in right]
             for item in left:
@@ -125,7 +122,6 @@ def generate_summary(change):
 
         formatted.append("To:")
 
-        # Handling different types for 'right'
         if isinstance(right, list):
             additions = [item for item in right if item not in left]
             for item in right:
@@ -210,8 +206,6 @@ def index():
 
     return render_template('upload.html')
 
-
-# In your Flask app's display route
 
 @app.route('/display')
 def display():
