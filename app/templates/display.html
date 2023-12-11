@@ -65,10 +65,14 @@
             align-items: center;
         }
         .content {
-            display: block; /* Initially show the content */
+            display: none; /* Hide content by default */
         }
         .hidden {
             display: none; /* Hide content */
+        }
+        .highlight-keyword { /* New class for highlighting keywords */
+            font-size: 1.2em; /* Larger font size */
+            font-weight: bold;
         }
     </style>
 </head>
@@ -79,7 +83,7 @@
             {% for section, diffs in differences_by_section.items() %}
                 <div class="section">
                     <div class="title-row">
-                        <button class="toggle-button" onclick="toggleSection(this)">▼</button>
+                        <button class="toggle-button" onclick="toggleSection(this)">►</button> <!-- Arrow pointing right -->
                         <h3>{{ section }} Differences</h3>
                     </div>
                     <div class="content">
@@ -122,9 +126,22 @@
         {% endif %}
     </div>
     <script>
+        window.onload = function() {
+            var keywords = ['Deleted:', 'Added:', 'From:', 'To:']; // Keywords to highlight
+            var summaryElements = document.querySelectorAll('.summary-content');
+
+            summaryElements.forEach(function(summary) {
+                var innerHTML = summary.innerHTML;
+                keywords.forEach(function(keyword) {
+                    var replaceWith = '<span class="highlight-keyword">' + keyword + '</span>';
+                    innerHTML = innerHTML.replace(new RegExp(keyword, 'g'), replaceWith);
+                });
+                summary.innerHTML = innerHTML;
+            });
+        };
         function toggleSection(button) {
             var content = button.parentNode.nextElementSibling; // Get the next sibling of the button's parent (the title row)
-            if (content.style.display === "none") {
+            if (content.style.display === "none" || content.style.display === "") {
                 content.style.display = "block";
                 button.innerHTML = "▼"; // Arrow pointing down
             } else {
@@ -132,6 +149,7 @@
                 button.innerHTML = "►"; // Arrow pointing right
             }
         }
+
     </script>
 </body>
 </html>

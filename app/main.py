@@ -94,19 +94,55 @@ def generate_summary(change):
         return '\n'.join([' ' * indent + f'- {format_value(item, indent + 2, style)}' for item in l])
 
     def diff_and_format(left, right, indent=0):
-        # Process additions and deletions
-        additions = [item for item in right if item not in left]
-        deletions = [item for item in left if item not in right]
-        
         formatted = []
         formatted.append("From:")
-        for item in left:
-            style = "background-color: red;" if item in deletions else ""
-            formatted.append(f'<span style="{style}">{format_value(item, indent)}</span>')
+
+        def format_based_on_type(value, style=""):
+            if isinstance(value, dict):
+                return format_dict(value, indent + 2, style)
+            elif isinstance(value, list):
+                return format_list(value, indent + 2, style)
+            else:
+                return f'<span style="{style}">{value}</span>'
+
+        # Handling different types for 'left'
+        if isinstance(left, list):
+            deletions = [item for item in left if item not in right]
+            for item in left:
+                style = "background-color: red;" if item in deletions else ""
+                formatted.append(format_based_on_type(item, style))
+        elif isinstance(left, dict):
+            for key, value in left.items():
+                if right is None or not isinstance(right, dict) or key not in right:
+                    style = "background-color: red;"
+                    formatted.append(f'{key}: {format_based_on_type(value, style)}')
+                else:
+                    formatted.append(f'{key}: {format_based_on_type(value)}')
+        else:
+            # For non-iterable types
+            style = "background-color: red;" if left != right else ""
+            formatted.append(format_based_on_type(left, style))
+
         formatted.append("To:")
-        for item in right:
-            style = "background-color: green;" if item in additions else ""
-            formatted.append(f'<span style="{style}">{format_value(item, indent)}</span>')
+
+        # Handling different types for 'right'
+        if isinstance(right, list):
+            additions = [item for item in right if item not in left]
+            for item in right:
+                style = "background-color: green;" if item in additions else ""
+                formatted.append(format_based_on_type(item, style))
+        elif isinstance(right, dict):
+            for key, value in right.items():
+                if left is None or not isinstance(left, dict) or key not in left:
+                    style = "background-color: green;"
+                    formatted.append(f'{key}: {format_based_on_type(value, style)}')
+                else:
+                    formatted.append(f'{key}: {format_based_on_type(value)}')
+        else:
+            # For non-iterable types
+            style = "background-color: green;" if right != left else ""
+            formatted.append(format_based_on_type(right, style))
+
         return '\n'.join(formatted)
 
     if 'left' in change and change['left'] is None:
@@ -120,6 +156,7 @@ def generate_summary(change):
         summary.append(modified_summary)
 
     return summary
+
 
 
 
