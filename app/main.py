@@ -74,6 +74,20 @@ def load_yaml_from_file(file):
 def generate_summary(change):
     summary = []
 
+    def flatten(data, parent_key=''):
+        items = []
+        if isinstance(data, dict):
+            for k, v in data.items():
+                new_key = f"{parent_key}.{k}" if parent_key else k
+                items.extend(flatten(v, new_key).items())
+        elif isinstance(data, list):
+            for i, v in enumerate(data):
+                new_key = f"{parent_key}[{i}]"
+                items.extend(flatten(v, new_key).items())
+        else:
+            items.append((parent_key, data))
+        return dict(items)
+
     def format_value(value, indent=0, style=""):
         if isinstance(value, dict):
             return format_dict(value, indent, style)
@@ -92,69 +106,46 @@ def generate_summary(change):
     def format_list(l, indent=0, style=""):
         return '\n'.join([' ' * indent + f'- {format_value(item, indent + 2, style)}' for item in l])
 
-    def diff_and_format(left, right, indent=0):
+    def diff_and_format(left, right):
         formatted = []
-        formatted.append("From:")
+        left_flat = flatten(left)
+        right_flat = flatten(right)
 
-        def format_based_on_type(value, style=""):
-            if isinstance(value, dict):
-                return format_dict(value, indent + 2, style)
-            elif isinstance(value, list):
-                return format_list(value, indent + 2, style)
-            else:
-                return f'<span style="{style}">{value}</span>'
-        if isinstance(left, list):
-            deletions = [item for item in left if item not in right]
-            for item in left:
-                style = "background-color: red;" if item in deletions else ""
-                formatted.append(format_based_on_type(item, style))
-        elif isinstance(left, dict):
-            for key, value in left.items():
-                if right is None or not isinstance(right, dict) or key not in right:
-                    style = "background-color: red;"
-                    formatted.append(f'{key}: {format_based_on_type(value, style)}')
-                else:
-                    formatted.append(f'{key}: {format_based_on_type(value)}')
-        else:
-            # For non-iterable types
-            style = "background-color: red;" if left != right else ""
-            formatted.append(format_based_on_type(left, style))
+        left_keys = set(left_flat.keys())
+        right_keys = set(right_flat.keys())
 
-        formatted.append("To:")
+        added_keys = right_keys - left_keys
+        removed_keys = left_keys - right_keys
+        common_keys = left_keys & right_keys
 
-        if isinstance(right, list):
-            additions = [item for item in right if item not in left]
-            for item in right:
-                style = "background-color: green;" if item in additions else ""
-                formatted.append(format_based_on_type(item, style))
-        elif isinstance(right, dict):
-            for key, value in right.items():
-                if left is None or not isinstance(left, dict) or key not in left:
-                    style = "background-color: green;"
-                    formatted.append(f'{key}: {format_based_on_type(value, style)}')
-                else:
-                    formatted.append(f'{key}: {format_based_on_type(value)}')
-        else:
-            # For non-iterable types
-            style = "background-color: green;" if right != left else ""
-            formatted.append(format_based_on_type(right, style))
+        if removed_keys:
+            formatted.append("Removed:")
+            for key in sorted(removed_keys):
+                formatted.append(f"  {key}: {left_flat[key]}")
+
+        if added_keys:
+            formatted.append("Added:")
+            for key in sorted(added_keys):
+                formatted.append(f"  {key}: {right_flat[key]}")
+
+        for key in sorted(common_keys):
+            if left_flat[key] != right_flat[key]:
+                formatted.append(f"Modified {key}:")
+                formatted.append(f"  From: {left_flat[key]}")
+                formatted.append(f"  To: {right_flat[key]}")
 
         return '\n'.join(formatted)
 
     if 'left' in change and change['left'] is None:
-        added_style = "background-color: lightgreen;"
-        summary.append('Added:\n' + format_value(change['right'], 0, added_style))
+        summary.append('Added:')
+        summary.append(format_value(change['right'], 0))
     elif 'right' in change and change['right'] is None:
-        deleted_style = "background-color: lightcoral;"
-        summary.append('Deleted:\n' + format_value(change['left'], 0, deleted_style))
+        summary.append('Removed:')
+        summary.append(format_value(change['left'], 0))
     else:
-        modified_summary = diff_and_format(change['left'], change['right'])
-        summary.append(modified_summary)
+        summary.append(diff_and_format(change['left'], change['right']))
 
     return summary
-
-
-
 
 def find_differences(dict1, dict2, base_path=''):
     differences = {}
@@ -248,9 +239,5 @@ def display():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
 
 

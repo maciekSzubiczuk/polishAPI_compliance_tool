@@ -3,7 +3,6 @@
 <head>
     <title>API Compliance Check</title>
     <style>
-        /* Reset some styles for better cross-browser consistency */
         body, h1, h2, h3, h4, button, pre {
             margin: 0;
             padding: 0;
@@ -11,47 +10,45 @@
         }
 
         body {
-            background-color: #f9f9f9; /* Light grey background for the body */
-            color: #333; /* Dark grey text for better readability */
+            background-color: #f9f9f9;
+            color: #333;
             line-height: 1.6;
             padding: 20px;
         }
 
         .title-row {
             display: flex;
-            align-items: center; /* Aligns items vertically center */
-            font-size: 1.5em; /* Larger font size for titles */
+            align-items: center;
+            font-size: 1.5em;
         }
 
         .title-row h3 {
-            margin-left: 10px; /* Adds spacing between button and title */
-            color: #004d40; /* Black with a slight green tinge */
+            margin-left: 10px;
+            color: #004d40;
         }
 
         h1, h2, h3, h4 {
-            color: #004d40; /* Black with a slight green tinge for all headings */
+            color: #004d40;
         }
 
         .summary-section h4 {
-            color: #000; /* Pure black for summary headings */
-            font-weight: bold; /* Makes the font bold */
-            text-shadow: 1px 1px 2px #888; /* Subtle shadow for a 3D effect */
+            color: #000;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #888;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background-color: white; /* White background for the container */
+            background-color: white;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
         }
-
-        /* Adjusting .diff-row for better spacing and visibility */
         .diff-row {
             border: 1px solid #ddd;
             margin-bottom: 20px;
             padding: 15px;
-            background-color: #f7fff7; /* Light green background for diff rows */
+            background-color: #f7fff7;
         }
 
         .diff-sections {
@@ -108,37 +105,34 @@
         }
 
         .toggle-button {
-            background-color: #27ae60; /* Green background for buttons */
+            background-color: #27ae60;
             border: none;
-            color: white; /* White text for buttons */
+            color: white;
             cursor: pointer;
             padding: 10px 15px;
             font-size: 1em;
-            border-radius: 4px; /* Rounded corners for buttons */
-            transition: background-color 0.3s; /* Smooth background color transition */
+            border-radius: 4px;
+            transition: background-color 0.3s;
         }
 
         .toggle-button:hover {
-            background-color: #2ecc71; /* Slightly lighter green on hover */
+            background-color: #2ecc71;
         }
 
-        .highlight-keyword { /* New class for highlighting keywords */
-            font-size: 1.2em; /* Larger font size */
+        .highlight-keyword {
+            font-size: 1.2em;
             font-weight: bold;
         }
-
-        /* Additional styles for better readability and spacing */
         .diff-sections, .summary-section {
-            margin-bottom: 20px; /* Added margin for better spacing */
+            margin-bottom: 20px;
         }
-
         .content {
-            display: none; /* Hide content by default */
+            display: none;
+        }
+        .hidden {
+            display: none;
         }
 
-        .hidden {
-            display: none; /* Hide content */
-        }
     </style>
 </head>
 <body>
