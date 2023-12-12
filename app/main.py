@@ -74,78 +74,46 @@ def load_yaml_from_file(file):
 def generate_summary(change):
     summary = []
 
-    def flatten(data, parent_key=''):
+    def flatten(data):
         items = []
         if isinstance(data, dict):
-            for k, v in data.items():
-                new_key = f"{parent_key}.{k}" if parent_key else k
-                items.extend(flatten(v, new_key).items())
+            for value in data.values():
+                items.extend(flatten(value))
         elif isinstance(data, list):
-            for i, v in enumerate(data):
-                new_key = f"{parent_key}[{i}]"
-                items.extend(flatten(v, new_key).items())
+            for value in data:
+                items.extend(flatten(value))
+        elif isinstance(data, str):  # Handling string values
+            items.append(data)
         else:
-            items.append((parent_key, data))
-        return dict(items)
+            items.append(str(data))  # Convert non-string, non-collection items to string
+        return items
 
-    def format_value(value, indent=0, style=""):
-        if isinstance(value, dict):
-            return format_dict(value, indent, style)
-        elif isinstance(value, list):
-            return format_list(value, indent, style)
-        else:
-            return ' ' * indent + f'<span style="{style}">{value}</span>'
 
-    def format_dict(d, indent=0, style=""):
-        formatted = []
-        for key, value in d.items():
-            formatted.append(' ' * indent + f'<span style="{style}">{key}:</span>')
-            formatted.append(format_value(value, indent + 2, style))
-        return '\n'.join(formatted)
+    def compare_and_process(left, right):
+        added = [item for item in right if item not in left]
+        removed = [item for item in left if item not in right]
 
-    def format_list(l, indent=0, style=""):
-        return '\n'.join([' ' * indent + f'- {format_value(item, indent + 2, style)}' for item in l])
+        if removed:
+            summary.append("Removed:")
+            summary.extend([f"  - {item}" for item in removed])
 
-    def diff_and_format(left, right):
-        formatted = []
-        left_flat = flatten(left)
-        right_flat = flatten(right)
-
-        left_keys = set(left_flat.keys())
-        right_keys = set(right_flat.keys())
-
-        added_keys = right_keys - left_keys
-        removed_keys = left_keys - right_keys
-        common_keys = left_keys & right_keys
-
-        if removed_keys:
-            formatted.append("Removed:")
-            for key in sorted(removed_keys):
-                formatted.append(f"  {key}: {left_flat[key]}")
-
-        if added_keys:
-            formatted.append("Added:")
-            for key in sorted(added_keys):
-                formatted.append(f"  {key}: {right_flat[key]}")
-
-        for key in sorted(common_keys):
-            if left_flat[key] != right_flat[key]:
-                formatted.append(f"Modified {key}:")
-                formatted.append(f"  From: {left_flat[key]}")
-                formatted.append(f"  To: {right_flat[key]}")
-
-        return '\n'.join(formatted)
+        if added:
+            summary.append("Added:")
+            summary.extend([f"  - {item}" for item in added])
 
     if 'left' in change and change['left'] is None:
-        summary.append('Added:')
-        summary.append(format_value(change['right'], 0))
+        summary.append("Added:")
+        summary.extend([f"  - {item}" for item in flatten(change['right'])])
     elif 'right' in change and change['right'] is None:
-        summary.append('Removed:')
-        summary.append(format_value(change['left'], 0))
+        summary.append("Removed:")
+        summary.extend([f"  - {item}" for item in flatten(change['left'])])
     else:
-        summary.append(diff_and_format(change['left'], change['right']))
+        left_items = flatten(change['left'])
+        right_items = flatten(change['right'])
+        compare_and_process(left_items, right_items)
 
-    return summary
+    final_summary = '\n'.join(summary).replace('\r', '')
+    return final_summary
 
 def find_differences(dict1, dict2, base_path=''):
     differences = {}

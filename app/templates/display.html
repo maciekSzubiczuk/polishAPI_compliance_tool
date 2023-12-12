@@ -170,12 +170,10 @@
                                 <div class="summary-section">
                                     {% set last_part = path.split('/')[-1] %}
                                     <h4>Summary for {{ last_part }}</h4>
-                                    {% for statement in change.summary %}
-                                        <div class="summary-content-wrapper">
-                                            <pre class="summary-content">{{ statement | safe }}</pre>
-                                        </div>
-                                    {% endfor %}
-                                </div>
+                                    <div class="summary-content-wrapper">
+                                        <pre class="summary-content">{{ change.summary | safe }}</pre>
+                                    </div>
+                                </div>                                
                             </div>
                         {% endfor %}
                     </div>
