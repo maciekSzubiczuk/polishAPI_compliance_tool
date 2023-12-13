@@ -81,7 +81,7 @@ def generate_summary(change):
 
     def format_change(path, value, change_type):
         if isinstance(value, dict):
-            # Format each key-value pair in the dictionary with a single '-'
+            # Format each key-value pair in the dictionary with a newline and a dash
             formatted_value = "\n".join([f"- {k}: {format_yaml(v)}" for k, v in value.items()])
         else:
             formatted_value = f"- {format_yaml(value)}"

@@ -87,15 +87,12 @@
             padding: 10px;
             overflow-x: auto;
         }
-
         .added-summary {
-            background-color: lightgreen;
+            background-color: rgba(144, 238, 144, 0.5); /* Light green with semi-transparency */
         }
-
         .deleted-summary {
-            background-color: lightcoral;
+            background-color: rgba(240, 128, 128, 0.5); /* Light red with semi-transparency */
         }
-
         .modified-summary {
             background-color: lightblue;
         }
@@ -132,7 +129,21 @@
         .hidden {
             display: none;
         }
-
+        .summary-content-wrapper.added-summary {
+            background-color: rgba(144, 238, 144, 0.5); /* Light green with semi-transparency */
+        }
+        .summary-content-wrapper.deleted-summary {
+            background-color: rgba(240, 128, 128, 0.5); /* Light red with semi-transparency */
+        }
+        .added-content, .removed-content {
+            padding: 5px; /* Adjust as needed */
+        }
+        .added-content {
+            background-color: rgba(144, 238, 144, 0.5); /* Light green with semi-transparency */
+        }
+        .removed-content {
+            background-color: rgba(240, 128, 128, 0.5); /* Light red with semi-transparency */
+        }
     </style>
 </head>
 <body>
@@ -153,7 +164,7 @@
                                     <div class="diff-section diff-section-left">
                                         <div class="path-title">{{ path }}</div>
                                         {% if change.left %}
-                                            <div class="yaml-content-wrapper {{ 'removed' if change.right is none else 'changed' }}">
+                                            <div class="yaml-content-wrapper {{ 'deleted-summary' if change.right is none else 'changed' }}">
                                                 <pre class="yaml-content">{{ change.left | safe }}</pre>
                                             </div>
                                         {% endif %}
@@ -161,7 +172,7 @@
                                     <div class="diff-section diff-section-right">
                                         <div class="path-title">{{ path }}</div>
                                         {% if change.right %}
-                                            <div class="yaml-content-wrapper {{ 'added' if change.left is none else 'changed' }}">
+                                            <div class="yaml-content-wrapper {{ 'added-summary' if change.left is none else 'changed' }}">
                                                 <pre class="yaml-content">{{ change.right | safe }}</pre>
                                             </div>
                                         {% endif %}
@@ -171,9 +182,20 @@
                                     {% set last_part = path.split('/')[-1] %}
                                     <h4>Summary for {{ last_part }}</h4>
                                     <div class="summary-content-wrapper">
-                                        <pre class="summary-content">{{ change.summary | safe }}</pre>
+                                        {% if 'Added:' in change.summary %}
+                                            <div>
+                                                <span class="highlight-keyword">Added:</span>
+                                                <div class="added-content" id="added-summary-{{ loop.index }}">{{ change.summary.split('Added:')[1].strip() | safe }}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% if 'Removed:' in change.summary %}
+                                            <div>
+                                                <span class="highlight-keyword">Removed:</span>
+                                                <div class="removed-content" id="removed-summary-{{ loop.index }}">{{ change.summary.split('Removed:')[1].strip() | safe }}</div>
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                </div>                                
+                                </div>                                                                       
                             </div>
                         {% endfor %}
                     </div>
@@ -184,10 +206,11 @@
         {% endif %}
     </div>
     <script>
-        window.onload = function() {
-            var keywords = ['Deleted:', 'Added:', 'From:', 'To:']; // Keywords to highlight
+        // Function to highlight keywords
+        function highlightKeywords() {
+            var keywords = ['Deleted:', 'Added:', 'From:', 'To:'];
             var summaryElements = document.querySelectorAll('.summary-content');
-
+    
             summaryElements.forEach(function(summary) {
                 var innerHTML = summary.innerHTML;
                 keywords.forEach(function(keyword) {
@@ -196,9 +219,18 @@
                 });
                 summary.innerHTML = innerHTML;
             });
-        };
+        }
+    
+        function formatSummaryContent() {
+            document.querySelectorAll('.added-content, .removed-content').forEach(function(element) {
+                let content = element.innerText;
+                // No need to replace dashes with line breaks as they are already formatted
+                element.innerHTML = '<pre>' + content + '</pre>';
+            });
+        }
+        // Function to toggle section visibility
         function toggleSection(button) {
-            var content = button.parentNode.nextElementSibling; // Get the next sibling of the button's parent (the title row)
+            var content = button.parentNode.nextElementSibling;
             if (content.style.display === "none" || content.style.display === "") {
                 content.style.display = "block";
                 button.innerHTML = "▼"; // Arrow pointing down
@@ -207,6 +239,14 @@
                 button.innerHTML = "►"; // Arrow pointing right
             }
         }
+    
+        // On window load
+        window.onload = function() {
+            highlightKeywords();
+            formatSummaryContent();
+        };
     </script>
+    
+    
 </body>
 </html>
