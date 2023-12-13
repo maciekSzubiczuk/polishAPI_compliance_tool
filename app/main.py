@@ -81,15 +81,15 @@ def generate_summary(change):
 
     def format_change(path, value, change_type):
         if isinstance(value, dict):
-            # Format each key-value pair in the dictionary
-            formatted_value = "\n".join([f"  - {k}: {format_yaml(v)}" for k, v in value.items()])
+            # Format each key-value pair in the dictionary with a single '-'
+            formatted_value = "\n".join([f"- {k}: {format_yaml(v)}" for k, v in value.items()])
         else:
-            formatted_value = format_yaml(value)
+            formatted_value = f"- {format_yaml(value)}"
 
         if path == 'Root':  # Avoid including 'Root' in the path
-            return f"{change_type}:\n  - {formatted_value}"
+            return f"{change_type}:\n{formatted_value}"
         else:
-            return f"{change_type}:\n  {path}\n    - {formatted_value}"
+            return f"{change_type}:\n{path}\n{formatted_value}"
 
     def compare_dicts(left, right, path=''):
         keys = set(left.keys()).union(right.keys())
@@ -132,8 +132,6 @@ def generate_summary(change):
 
     final_summary = '\n'.join(summary)
     return final_summary
-
-
 
 def find_differences(dict1, dict2, base_path=''):
     differences = {}
