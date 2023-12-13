@@ -74,46 +74,60 @@ def load_yaml_from_file(file):
 def generate_summary(change):
     summary = []
 
-    def flatten(data):
-        items = []
-        if isinstance(data, dict):
-            for value in data.values():
-                items.extend(flatten(value))
-        elif isinstance(data, list):
-            for value in data:
-                items.extend(flatten(value))
-        elif isinstance(data, str):  # Handling string values
-            items.append(data)
-        else:
-            items.append(str(data))  # Convert non-string, non-collection items to string
-        return items
+    def format_yaml(value):
+        if isinstance(value, (dict, list)):
+            return yaml.dump(value, default_flow_style=False, sort_keys=False).strip()
+        return value
 
+    def format_change(path, value, change_type):
+        formatted_value = format_yaml(value)
+        if path == 'Root':  # Avoid including 'Root' in the path
+            return f"{change_type}:\n  - {formatted_value}"
+        return f"{change_type}:\n  {path}\n    - {formatted_value}"
 
-    def compare_and_process(left, right):
-        added = [item for item in right if item not in left]
-        removed = [item for item in left if item not in right]
+    def compare_dicts(left, right, path=''):
+        keys = set(left.keys()).union(right.keys())
+        for key in keys:
+            left_value = left.get(key)
+            right_value = right.get(key)
+            new_path = f"{path}.{key}" if path else key
 
-        if removed:
-            summary.append("Removed:")
-            summary.extend([f"  - {item}" for item in removed])
+            if left_value is None:
+                summary.append(format_change(new_path, right_value, "Added"))
+            elif right_value is None:
+                summary.append(format_change(new_path, left_value, "Removed"))
+            elif isinstance(left_value, dict) and isinstance(right_value, dict):
+                compare_dicts(left_value, right_value, new_path)
+            elif isinstance(left_value, list) and isinstance(right_value, list):
+                compare_lists(left_value, right_value, new_path)
+            elif left_value != right_value:
+                # Handling simple types like strings
+                if right_value is None:
+                    summary.append(format_change(new_path, left_value, "Removed"))
+                else:
+                    summary.append(format_change(new_path, right_value, "Added"))
 
-        if added:
-            summary.append("Added:")
-            summary.extend([f"  - {item}" for item in added])
+    def compare_lists(left, right, path):
+        added_items = [item for item in right if item not in left]
+        removed_items = [item for item in left if item not in right]
 
-    if 'left' in change and change['left'] is None:
-        summary.append("Added:")
-        summary.extend([f"  - {item}" for item in flatten(change['right'])])
-    elif 'right' in change and change['right'] is None:
-        summary.append("Removed:")
-        summary.extend([f"  - {item}" for item in flatten(change['left'])])
+        for item in added_items:
+            summary.append(format_change(path, item, "Added"))
+        for item in removed_items:
+            summary.append(format_change(path, item, "Removed"))
+
+    # Handling of root level differences
+    if isinstance(change['left'], dict) and isinstance(change['right'], dict):
+        compare_dicts(change['left'], change['right'])
+    elif isinstance(change['left'], list) and isinstance(change['right'], list):
+        compare_lists(change['left'], change['right'], '')
     else:
-        left_items = flatten(change['left'])
-        right_items = flatten(change['right'])
-        compare_and_process(left_items, right_items)
+        # Handling simple types like strings at the root level
+        compare_dicts({'Root': change['left']}, {'Root': change['right']}, '')
 
-    final_summary = '\n'.join(summary).replace('\r', '')
+    final_summary = '\n'.join(summary)
     return final_summary
+
 
 def find_differences(dict1, dict2, base_path=''):
     differences = {}
