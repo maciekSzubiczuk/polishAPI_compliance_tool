@@ -87,6 +87,12 @@
             padding: 10px;
             overflow-x: auto;
         }
+        .added-content {
+            background-color: rgba(144, 238, 144, 0.5); /* Light green background for added content */
+        }
+        .removed-content {
+            background-color: rgba(240, 128, 128, 0.5); /* Light red background for removed content */
+        }
         .added-summary {
             background-color: rgba(144, 238, 144, 0.5); /* Light green with semi-transparency */
         }
@@ -135,15 +141,7 @@
         .summary-content-wrapper.deleted-summary {
             background-color: rgba(240, 128, 128, 0.5); /* Light red with semi-transparency */
         }
-        .added-content, .removed-content {
-            padding: 5px; /* Adjust as needed */
-        }
-        .added-content {
-            background-color: rgba(144, 238, 144, 0.5); /* Light green with semi-transparency */
-        }
-        .removed-content {
-            background-color: rgba(240, 128, 128, 0.5); /* Light red with semi-transparency */
-        }
+
     </style>
 </head>
 <body>
@@ -183,17 +181,19 @@
                                     <h4>Summary for {{ last_part }}</h4>
                                     <div class="summary-content-wrapper">
                                         {% if 'Added:' in change.summary %}
-                                            <div>
-                                                <span class="highlight-keyword">Added:</span>
-                                                <div class="added-content" id="added-summary-{{ loop.index }}">{{ change.summary.split('Added:')[1].strip() | safe }}</div>
-                                            </div>
-                                        {% endif %}
-                                        {% if 'Removed:' in change.summary %}
-                                            <div>
-                                                <span class="highlight-keyword">Removed:</span>
-                                                <div class="removed-content" id="removed-summary-{{ loop.index }}">{{ change.summary.split('Removed:')[1].strip() | safe }}</div>
-                                            </div>
-                                        {% endif %}
+                                        <div>
+                                            <span class="highlight-keyword">Added:</span>
+                                            <pre class="yaml-content added-content" id="added-summary-{{ loop.index }}">{{ change.summary.split('Added:')[1].strip() | safe }}</pre>
+                                        </div>
+                                    {% endif %}
+                                    {% if 'Removed:' in change.summary %}
+                                        <div>
+                                            <span class="highlight-keyword">Removed:</span>
+                                            <pre class="yaml-content removed-content" id="removed-summary-{{ loop.index }}">{{ change.summary.split('Removed:')[1].strip() | safe }}</pre>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    
                                     </div>
                                 </div>                                                                       
                             </div>
