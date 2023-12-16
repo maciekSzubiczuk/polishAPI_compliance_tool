@@ -149,6 +149,16 @@
             margin-bottom: 10px; /* Add some space between the label and the content */
             color: #555; /* Choose a color that stands out but fits the design */
         }
+        .include-in-report {
+            margin-bottom: 10px; /* Space before the summary section */
+            display: flex; /* To align the checkbox and label on the same line */
+            align-items: center; /* Vertically center the checkbox and label */
+        }
+
+        .include-in-report label {
+            margin-left: 5px; /* Space between the checkbox and label */
+        }
+
     </style>
 </head>
 <body>
@@ -184,6 +194,10 @@
                                             </div>
                                         {% endif %}
                                     </div>
+                                </div>
+                                <div class="include-in-report">
+                                    <input type="checkbox" id="include-{{ loop.index }}" name="include-{{ loop.index }}" checked>
+                                    <label for="include-{{ loop.index }}">Include in report</label>
                                 </div>
                                 <div class="summary-section">
                                     {% set last_part = path.split('/')[-1] %}
