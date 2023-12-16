@@ -77,7 +77,9 @@
             background-color: #f8f8f8;
         }
 
-        .yaml-content,
+        .yaml-content, 
+        .added-content,
+        .removed-content,
         .summary-content {
             white-space: pre;
             font-family: monospace;
@@ -141,7 +143,12 @@
         .summary-content-wrapper.deleted-summary {
             background-color: rgba(240, 128, 128, 0.5); /* Light red with semi-transparency */
         }
-
+        .api-label {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px; /* Add some space between the label and the content */
+            color: #555; /* Choose a color that stands out but fits the design */
+        }
     </style>
 </head>
 <body>
@@ -160,6 +167,7 @@
                             <div class="diff-row">
                                 <div class="diff-sections">
                                     <div class="diff-section diff-section-left">
+                                        <div class="api-label">PolishAPI</div> <!-- Label for the left side -->
                                         <div class="path-title">{{ path }}</div>
                                         {% if change.left %}
                                             <div class="yaml-content-wrapper {{ 'deleted-summary' if change.right is none else 'changed' }}">
@@ -168,6 +176,7 @@
                                         {% endif %}
                                     </div>
                                     <div class="diff-section diff-section-right">
+                                        <div class="api-label">Santander</div> <!-- Label for the right side -->
                                         <div class="path-title">{{ path }}</div>
                                         {% if change.right %}
                                             <div class="yaml-content-wrapper {{ 'added-summary' if change.left is none else 'changed' }}">
