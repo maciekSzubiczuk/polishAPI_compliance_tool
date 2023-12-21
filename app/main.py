@@ -1,12 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response,send_file
 import yaml
 from deepdiff import DeepDiff
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+import csv
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 app = Flask(__name__)
 
 # Storage for uploaded file contents
 polish_api_data = None
 santander_api_data = []
+# Temporary storage for the CSV file
+xlsx_file_path = 'C:\praca_inzynierska\polishAPI_compliance_tool\\reports\\report.xlsx'  # Adjust the path as needed
 
 api_sections = {
     'PIS': '/v2_1_1.1/payments',
@@ -149,23 +157,6 @@ def find_differences(dict1, dict2, base_path=''):
             differences[base_path + key] = {'left': None, 'right': dict2[key]}
     return differences
 
-def find_pis_differences(polish_api_data, santander_api_data):
-    pis_differences = {}
-    polish_paths = polish_api_data.get('paths', {})
-    santander_paths = santander_api_data.get('paths', {})
-
-    # Filter for paths with 'x-swagger-router-controller: pis'
-    for path, details in polish_paths.items():
-        if details.get('x-swagger-router-controller') == 'pis':
-            santander_details = santander_paths.get(path)
-            if santander_details and details != santander_details:
-                pis_differences[path] = {
-                    'polish_api': details,
-                    'santander_api': santander_details
-                }
-    
-    return pis_differences
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global polish_api_data, santander_api_data
@@ -219,9 +210,46 @@ def display():
         }
     all_differences['Definitions'] = formatted_definitions_diffs
 
+    wb = Workbook()
+    ws = wb.active
+
+    # Add column headers
+    headers = ['Section', 'Path', 'Left', 'Right', 'Summary']
+    ws.append(headers)
+
+    # Write the data
+    for section, diffs in all_differences.items():
+        for path, change in diffs.items():
+            ws.append([
+                section,
+                path,
+                change.get('left', ''),
+                change.get('right', ''),
+                change.get('summary', '')
+            ])
+
+    # Adjust column widths (optional)
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column  # Get the column name
+        for cell in col:
+            try:  # Necessary to avoid error on empty cells
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[get_column_letter(column)].width = adjusted_width
+
+    # Save the workbook to a temporary file
+    xlsx_file_path_temp = xlsx_file_path
+    wb.save(xlsx_file_path_temp)
+
     return render_template('display.html', differences_by_section=all_differences)
 
-
+@app.route('/download-xlsx')
+def download_xlsx():
+    return send_file(xlsx_file_path, as_attachment=True, download_name='report.xlsx')
 
 if __name__ == '__main__':
     app.run(debug=True)

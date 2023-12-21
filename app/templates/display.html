@@ -165,16 +165,22 @@
     <div class="container">
         <h1>API Compliance Check</h1>
         <h2>Comparison Results</h2>
+        <a href="/download-xlsx" class="toggle-button">Download Excel Report</a>
         {% if differences_by_section %}
             {% for section, diffs in differences_by_section.items() %}
-                <div class="section">
+                <div class="section" data-section-name="{{ section }}">
                     <div class="title-row">
                         <button class="toggle-button" onclick="toggleSection(this)">►</button>
                         <h3>{{ section }} Differences</h3>
                     </div>
                     <div class="content">
                         {% for path, change in diffs.items() %}
-                            <div class="diff-row">
+                        <div class="diff-row"
+                            data-path="{{ path | tojson | safe }}"
+                            data-left="{{ change.left | tojson | safe }}"
+                            data-right="{{ change.right | tojson | safe }}"
+                            data-summary="{{ change.summary | tojson | safe }}"
+                            data-include-id="include-{{ loop.index }}">
                                 <div class="diff-sections">
                                     <div class="diff-section diff-section-left">
                                         <div class="api-label">PolishAPI</div> <!-- Label for the left side -->
@@ -262,7 +268,49 @@
                 button.innerHTML = "►"; // Arrow pointing right
             }
         }
-    
+
+        function downloadPDF() {
+            console.log('Download PDF triggered'); // To verify the function is called
+            var dataForPDF = [];
+            var diffRows = document.querySelectorAll('.diff-row');
+
+            diffRows.forEach(function(diffRow) {
+                var includeCheckbox = diffRow.querySelector('.include-in-report input[type="checkbox"]');
+                if (includeCheckbox && includeCheckbox.checked) {
+                    var path = diffRow.getAttribute('data-path') ? JSON.parse(diffRow.getAttribute('data-path')) : '';
+                    var left = diffRow.getAttribute('data-left') ? JSON.parse(diffRow.getAttribute('data-left')) : '';
+                    var right = diffRow.getAttribute('data-right') ? JSON.parse(diffRow.getAttribute('data-right')) : '';
+                    var summary = diffRow.getAttribute('data-summary') ? JSON.parse(diffRow.getAttribute('data-summary')) : '';
+
+                    var diffData = { path, left, right, summary };
+                    dataForPDF.push(diffData);
+                }
+            });
+
+            // Convert the data to a JSON string and send the request to the Flask endpoint
+            fetch('/generate-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataForPDF)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Create a link element, use it to download the PDF, and then delete it
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'report.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
         // On window load
         window.onload = function() {
             highlightKeywords();
