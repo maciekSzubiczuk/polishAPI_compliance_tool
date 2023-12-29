@@ -7,6 +7,7 @@ from reportlab.lib.pagesizes import letter
 import csv
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import PatternFill, Alignment, Border, Side
 
 app = Flask(__name__)
 
@@ -71,9 +72,6 @@ def merge_api_data(api_files):
             else:
                 merged_data[key] = value
     return merged_data
-
-
-
 
 def load_yaml_from_file(file):
     if file:
@@ -213,9 +211,12 @@ def display():
     wb = Workbook()
     ws = wb.active
 
-    # Add column headers
-    headers = ['Section', 'Path', 'Left', 'Right', 'Summary']
+    # Update column headers
+    headers = ['Section', 'Path', 'PolishApi', 'Santander', 'Summary']
     ws.append(headers)
+
+    # Add filters to the top of each column
+    ws.auto_filter.ref = ws.dimensions
 
     # Write the data
     for section, diffs in all_differences.items():
@@ -228,24 +229,73 @@ def display():
                 change.get('summary', '')
             ])
 
-    # Adjust column widths (optional)
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column  # Get the column name
-        for cell in col:
-            try:  # Necessary to avoid error on empty cells
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2)
-        ws.column_dimensions[get_column_letter(column)].width = adjusted_width
+    # Change header colors
+    header_colors = {
+        'A': 'D3D3D3',  # Light gray
+        'B': 'DDA0DD',  # Light purple
+        'C': '90EE90',  # Light green
+        'D': 'FF6347',  # Darker red for Santander
+        'E': 'F0F0F0',  # Very light gray for Summary
+    }
+
+    # Apply header colors
+    for column, color in header_colors.items():
+        ws[column + '1'].fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
+
+    # More subtle colors for sections
+    section_colors = {
+        'PIS': 'FFF0E0', 'CAF': 'E0FFF0', 'AIS': 'E0E0FF', 'AS': 'FFE0E0', 'Definitions': 'FFF0FF'
+    }
+    for row in ws.iter_rows(min_row=2, max_col=1, values_only=False):
+        section = row[0].value
+        if section in section_colors:
+            row[0].fill = PatternFill(start_color=section_colors[section], end_color=section_colors[section], fill_type="solid")
+
+    # Apply borders for better visibility
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    for row in ws.iter_rows():
+        for cell in row:
+            cell.border = thin_border
+
+    # Adjust Column Widths
+    column_widths = {'B': 60, 'C': 45, 'D': 35, 'E': 35}  # Increased widths
+    for column, width in column_widths.items():
+        ws.column_dimensions[column].width = width
+
+    # Delete unnecessary column 'F'
+    ws.delete_cols(6)
+
+    # Additional Improvements: Center Alignment
+    top_left_alignment = Alignment(horizontal='left', vertical='top',wrap_text=True)
+    # Adjust Row Heights to fit content
+    for row in ws.iter_rows():
+        for cell in row:
+            cell.alignment = top_left_alignment
+            new_height = max(cell.value.count('\n') + 1, 1) * 15  # Adjust height based on content
+            if ws.row_dimensions[cell.row].height is None or \
+               ws.row_dimensions[cell.row].height < new_height:
+                ws.row_dimensions[cell.row].height = new_height
+
+    ws.freeze_panes = 'A2'
 
     # Save the workbook to a temporary file
     xlsx_file_path_temp = xlsx_file_path
     wb.save(xlsx_file_path_temp)
 
-    return render_template('display.html', differences_by_section=all_differences)
+    # Calculate counts for additions and deletions
+    counts_by_section = {}
+    for section, diffs in all_differences.items():
+        additions = sum(1 for change in diffs.values() if not change.get('left'))
+        deletions = sum(1 for change in diffs.values() if not change.get('right'))
+        counts_by_section[section] = {'additions': additions, 'deletions': deletions}
+
+    # Pass these counts along with all_differences to the template
+    return render_template('display.html', differences_by_section=all_differences, counts_by_section=counts_by_section)
 
 @app.route('/download-xlsx')
 def download_xlsx():

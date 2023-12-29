@@ -17,15 +17,16 @@
         }
 
         .title-row {
-            display: flex;
-            align-items: center;
             font-size: 1.5em;
+            margin-bottom: 10px; /* Add space between title row and the content below */
         }
 
         .title-row h3 {
             margin-left: 10px;
             color: #004d40;
+            display: inline; /* Inline display for the header */
         }
+
 
         h1, h2, h3, h4 {
             color: #004d40;
@@ -158,6 +159,19 @@
         .include-in-report label {
             margin-left: 5px; /* Space between the checkbox and label */
         }
+        .counts {
+            display: block; /* Force it to behave like a block-level element */
+        }
+        .additions-count {
+            color: darkgreen;
+        }
+        .deletions-count {
+            color: darkred;
+        }
+        .header-inline {
+            display: inline-flex; /* Inline flex container */
+            align-items: center;
+        }
 
     </style>
 </head>
@@ -170,8 +184,14 @@
             {% for section, diffs in differences_by_section.items() %}
                 <div class="section" data-section-name="{{ section }}">
                     <div class="title-row">
-                        <button class="toggle-button" onclick="toggleSection(this)">►</button>
-                        <h3>{{ section }} Differences</h3>
+                        <div class="header-inline"> <!-- New container for inline elements -->
+                            <button class="toggle-button" onclick="toggleSection(this)">►</button>
+                            <h3>{{ section }} Differences</h3>
+                        </div>
+                        <div class="counts">
+                            <span class="additions-count">Additions: {{ counts_by_section[section].additions }}</span>
+                            <span class="deletions-count">Deletions: {{ counts_by_section[section].deletions }}</span>
+                        </div>
                     </div>
                     <div class="content">
                         {% for path, change in diffs.items() %}
@@ -222,7 +242,7 @@
                                         </div>
                                     {% endif %}
                                     
-                                    
+            
                                     </div>
                                 </div>                                                                       
                             </div>
@@ -257,9 +277,9 @@
                 element.innerHTML = '<pre>' + content + '</pre>';
             });
         }
-        // Function to toggle section visibility
         function toggleSection(button) {
-            var content = button.parentNode.nextElementSibling;
+            // Find the nearest parent .section div and then find its .content child
+            var content = button.closest('.section').querySelector('.content');
             if (content.style.display === "none" || content.style.display === "") {
                 content.style.display = "block";
                 button.innerHTML = "▼"; // Arrow pointing down
@@ -268,6 +288,7 @@
                 button.innerHTML = "►"; // Arrow pointing right
             }
         }
+
 
         function downloadPDF() {
             console.log('Download PDF triggered'); // To verify the function is called
@@ -317,7 +338,5 @@
             formatSummaryContent();
         };
     </script>
-    
-    
 </body>
 </html>
