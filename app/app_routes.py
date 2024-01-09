@@ -41,10 +41,10 @@ def display():
     if not polish_api_data or not santander_api_data:
         return render_template('display.html', differences_by_section={})
 
-    # Find differences by API section
+    # differences by API section
     differences_by_section = find_differences_by_section(polish_api_data, santander_api_data, api_sections)
 
-    # Find differences in definitions
+    # differences in definitions
     definitions_differences = find_definitions_differences(polish_api_data, santander_api_data)
     
     # Combine all differences and generate summaries
@@ -60,7 +60,6 @@ def display():
             }
         all_differences[section] = formatted_diffs
 
-    # Add definitions differences with summary
     formatted_definitions_diffs = {}
     for key, change in definitions_differences.items():
         summary = generate_summary(change)
@@ -73,14 +72,12 @@ def display():
 
     generate_excel_report(all_differences, xlsx_file_path)
 
-    # Calculate counts for additions and deletions
     counts_by_section = {}
     for section, diffs in all_differences.items():
         additions = sum(1 for change in diffs.values() if not change.get('left'))
         deletions = sum(1 for change in diffs.values() if not change.get('right'))
         counts_by_section[section] = {'additions': additions, 'deletions': deletions}
 
-    # Pass these counts along with all_differences to the template
     return render_template('display.html', differences_by_section=all_differences, counts_by_section=counts_by_section)
 
 @routes.route('/download-xlsx')

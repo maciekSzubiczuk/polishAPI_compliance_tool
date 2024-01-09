@@ -12,12 +12,12 @@ def generate_summary(change):
 
     def format_change(path, value, change_type):
         if isinstance(value, dict):
-            # Format each key-value pair in the dictionary with a newline and a dash
+            # each key-value pair in the dictionary is with a newline and a dash
             formatted_value = "\n".join([f"- {k}: {format_yaml(v)}" for k, v in value.items()])
         else:
             formatted_value = f"- {format_yaml(value)}"
 
-        if path == 'Root':  # Avoid including 'Root' in the path
+        if path == 'Root':
             return f"{change_type}:\n{formatted_value}"
         else:
             return f"{change_type}:\n{path}\n{formatted_value}"
@@ -52,13 +52,12 @@ def generate_summary(change):
         for item in removed_items:
             summary.append(format_change(path, item, "Removed"))
 
-    # Handling of root level differences
+    # root level differences
     if isinstance(change['left'], dict) and isinstance(change['right'], dict):
         compare_dicts(change['left'], change['right'])
     elif isinstance(change['left'], list) and isinstance(change['right'], list):
         compare_lists(change['left'], change['right'], '')
     else:
-        # Handling simple types like strings at the root level
         compare_dicts({'Root': change['left']}, {'Root': change['right']}, '')
 
     final_summary = '\n'.join(summary)
@@ -68,15 +67,9 @@ def generate_summary(change):
 def generate_excel_report(all_differences, xlsx_file_path):
     wb = Workbook()
     ws = wb.active
-
-    # Update column headers
     headers = ['Section', 'Path', 'PolishApi', 'Santander', 'Summary']
     ws.append(headers)
-
-    # Add filters to the top of each column
     ws.auto_filter.ref = ws.dimensions
-
-    # Write the data
     for section, diffs in all_differences.items():
         for path, change in diffs.items():
             ws.append([
@@ -96,11 +89,9 @@ def generate_excel_report(all_differences, xlsx_file_path):
         'E': 'F0F0F0',  # Very light gray for Summary
     }
 
-    # Apply header colors
     for column, color in header_colors.items():
         ws[column + '1'].fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
 
-    # More subtle colors for sections
     section_colors = {
         'PIS': 'FFF0E0', 'CAF': 'E0FFF0', 'AIS': 'E0E0FF', 'AS': 'FFE0E0', 'Definitions': 'FFF0FF'
     }
@@ -109,7 +100,6 @@ def generate_excel_report(all_differences, xlsx_file_path):
         if section in section_colors:
             row[0].fill = PatternFill(start_color=section_colors[section], end_color=section_colors[section], fill_type="solid")
 
-    # Apply borders for better visibility
     thin_border = Border(
         left=Side(style='thin'),
         right=Side(style='thin'),
@@ -120,27 +110,21 @@ def generate_excel_report(all_differences, xlsx_file_path):
         for cell in row:
             cell.border = thin_border
 
-    # Adjust Column Widths
-    column_widths = {'B': 60, 'C': 45, 'D': 35, 'E': 35}  # Increased widths
+    column_widths = {'B': 60, 'C': 45, 'D': 35, 'E': 35}
     for column, width in column_widths.items():
         ws.column_dimensions[column].width = width
 
-    # Delete unnecessary column 'F'
     ws.delete_cols(6)
 
-    # Additional Improvements: Center Alignment
     top_left_alignment = Alignment(horizontal='left', vertical='top',wrap_text=True)
-    # Adjust Row Heights to fit content
     for row in ws.iter_rows():
         for cell in row:
             cell.alignment = top_left_alignment
-            new_height = max(cell.value.count('\n') + 1, 1) * 15  # Adjust height based on content
+            new_height = max(cell.value.count('\n') + 1, 1) * 15
             if ws.row_dimensions[cell.row].height is None or \
                ws.row_dimensions[cell.row].height < new_height:
                 ws.row_dimensions[cell.row].height = new_height
 
     ws.freeze_panes = 'A2'
-
-    # Save the workbook to a temporary file
     xlsx_file_path_temp = xlsx_file_path
     wb.save(xlsx_file_path_temp)
