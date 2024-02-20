@@ -5,22 +5,25 @@ import yaml
 def generate_summary(change):
     summary = []
 
-    def format_yaml(value):
-        if isinstance(value, (dict, list)):
-            return yaml.dump(value, default_flow_style=False, sort_keys=False).strip()
-        return value
+    def format_yaml(value, level=0):
+        indent = "  " * level
+        if isinstance(value, dict):
+            formatted_items = []
+            for k, v in value.items():
+                if isinstance(v, (dict, list)):
+                    formatted_items.append(f"{indent}• {k}:\n{format_yaml(v, level + 1)}")
+                else:
+                    formatted_items.append(f"{indent}• {k}: {v}")
+            return "\n".join(formatted_items)
+        elif isinstance(value, list):
+            return "\n".join([f"{indent}• {format_yaml(v, level + 1)}" for v in value])
+        else:
+            return f"{indent}{value}"
 
     def format_change(path, value, change_type):
-        if isinstance(value, dict):
-            # each key-value pair in the dictionary is with a newline and a dash
-            formatted_value = "\n".join([f"- {k}: {format_yaml(v)}" for k, v in value.items()])
-        else:
-            formatted_value = f"- {format_yaml(value)}"
-
-        if path == 'Root':
-            return f"{change_type}:\n{formatted_value}"
-        else:
-            return f"{change_type}:\n{path}\n{formatted_value}"
+        formatted_value = format_yaml(value, 0)
+        prefix = f"{change_type}:" if path == 'Root' else f"{change_type}:\n{path}"
+        return f"{prefix}\n{formatted_value}"
 
     def compare_dicts(left, right, path=''):
         keys = set(left.keys()).union(right.keys())
@@ -52,7 +55,6 @@ def generate_summary(change):
         for item in removed_items:
             summary.append(format_change(path, item, "Removed"))
 
-    # root level differences
     if isinstance(change['left'], dict) and isinstance(change['right'], dict):
         compare_dicts(change['left'], change['right'])
     elif isinstance(change['left'], list) and isinstance(change['right'], list):
@@ -60,8 +62,8 @@ def generate_summary(change):
     else:
         compare_dicts({'Root': change['left']}, {'Root': change['right']}, '')
 
-    final_summary = '\n'.join(summary)
-    return final_summary
+    return '\n'.join(summary)
+
 
 
 def generate_excel_report(all_differences, xlsx_file_path):
