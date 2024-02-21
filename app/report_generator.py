@@ -5,23 +5,32 @@ import yaml
 def generate_summary(change):
     summary = []
 
-    def format_yaml(value, level=0):
+    def format_yaml(value, level=0, is_top_level=False):
         indent = "  " * level
         if isinstance(value, dict):
             formatted_items = []
             for k, v in value.items():
+                prefix = "• " if is_top_level else ""
                 if isinstance(v, (dict, list)):
-                    formatted_items.append(f"{indent}• {k}:\n{format_yaml(v, level + 1)}")
+                    formatted_items.append(f"{indent}{prefix}{k}:\n{format_yaml(v, level + 1)}")
                 else:
-                    formatted_items.append(f"{indent}• {k}: {v}")
+                    formatted_items.append(f"{indent}{prefix}{k}: {v}")
             return "\n".join(formatted_items)
         elif isinstance(value, list):
-            return "\n".join([f"{indent}• {format_yaml(v, level + 1)}" for v in value])
+            formatted_list = []
+            for v in value:
+                if isinstance(v, dict):
+                    formatted_list.extend([format_yaml(v, level, False)])
+                else:
+                    prefix = "• " if is_top_level else "- "
+                    formatted_list.append(f"{indent}{prefix}{v}")
+            return "\n".join(formatted_list)
         else:
             return f"{indent}{value}"
 
     def format_change(path, value, change_type):
-        formatted_value = format_yaml(value, 0)
+        # Always consider the root level as top-level for bullet points
+        formatted_value = format_yaml(value, 0, is_top_level=True)
         prefix = f"{change_type}:" if path == 'Root' else f"{change_type}:\n{path}"
         return f"{prefix}\n{formatted_value}"
 
@@ -62,7 +71,8 @@ def generate_summary(change):
     else:
         compare_dicts({'Root': change['left']}, {'Root': change['right']}, '')
 
-    return '\n'.join(summary)
+    final_summary = '\n'.join(summary)
+    return final_summary
 
 
 
