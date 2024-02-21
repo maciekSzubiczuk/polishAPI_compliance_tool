@@ -25,15 +25,11 @@ def generate_summary(change):
         else:
             # Ensure scalar values at the top level are prefixed with a bullet point
             return f"{indent}{'• ' if is_top_level else ''}{value}"
-
+        
     def format_change(path, value, change_type):
-        # Treat the root level or any scalar value as top-level for formatting
-        is_top_level = path == 'Root' or not isinstance(value, (dict, list))
-        formatted_value = format_yaml(value, 0, is_top_level=is_top_level)
-        prefix = f"{change_type}:" if path == 'Root' else f"{change_type}:\n{path}"
-        return f"{prefix}\n{formatted_value}"
-
-    def format_change(path, value, change_type):
+        # Check for empty values and return None or an empty string to prevent appending
+        if value is None or (isinstance(value, (dict, list)) and not value):
+            return ''
         # Always consider the root level as top-level for bullet points
         formatted_value = format_yaml(value, 0, is_top_level=True)
         prefix = f"{change_type}:" if path == 'Root' else f"{change_type}:\n{path}"
@@ -46,19 +42,28 @@ def generate_summary(change):
             right_value = right.get(key)
             new_path = f"{path}.{key}" if path else key
 
-            if left_value is None:
-                summary.append(format_change(new_path, right_value, "Added"))
-            elif right_value is None:
-                summary.append(format_change(new_path, left_value, "Removed"))
+            # Check for meaningful differences before appending
+            if left_value is None and right_value:
+                formatted_change = format_change(new_path, right_value, "Added")
+                if formatted_change.strip():
+                    summary.append(formatted_change)
+            elif right_value is None and left_value:
+                formatted_change = format_change(new_path, left_value, "Removed")
+                if formatted_change.strip():
+                    summary.append(formatted_change)
             elif isinstance(left_value, dict) and isinstance(right_value, dict):
                 compare_dicts(left_value, right_value, new_path)
             elif isinstance(left_value, list) and isinstance(right_value, list):
                 compare_lists(left_value, right_value, new_path)
             elif left_value != right_value:
-                if right_value is None:
-                    summary.append(format_change(new_path, left_value, "Removed"))
+                if right_value is None or left_value is None:
+                    # This case is handled by the initial checks for None
+                    pass
                 else:
-                    summary.append(format_change(new_path, right_value, "Added"))
+                    formatted_change = format_change(new_path, right_value if left_value is None else left_value, "Removed" if right_value is None else "Added")
+                    if formatted_change.strip():
+                        summary.append(formatted_change)
+
 
     def compare_lists(left, right, path):
         added_items = [item for item in right if item not in left]
