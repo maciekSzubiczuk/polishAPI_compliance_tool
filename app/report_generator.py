@@ -19,14 +19,19 @@ def generate_summary(change):
         elif isinstance(value, list):
             formatted_list = []
             for v in value:
-                if isinstance(v, dict):
-                    formatted_list.extend([format_yaml(v, level, False)])
-                else:
-                    prefix = "• " if is_top_level else "- "
-                    formatted_list.append(f"{indent}{prefix}{v}")
+                prefix = "• " if is_top_level else "- "
+                formatted_list.append(f"{indent}{prefix}{format_yaml(v, level + 1, False)}")
             return "\n".join(formatted_list)
         else:
-            return f"{indent}{value}"
+            # Ensure scalar values at the top level are prefixed with a bullet point
+            return f"{indent}{'• ' if is_top_level else ''}{value}"
+
+    def format_change(path, value, change_type):
+        # Treat the root level or any scalar value as top-level for formatting
+        is_top_level = path == 'Root' or not isinstance(value, (dict, list))
+        formatted_value = format_yaml(value, 0, is_top_level=is_top_level)
+        prefix = f"{change_type}:" if path == 'Root' else f"{change_type}:\n{path}"
+        return f"{prefix}\n{formatted_value}"
 
     def format_change(path, value, change_type):
         # Always consider the root level as top-level for bullet points
