@@ -172,6 +172,12 @@
             display: inline-flex; /* Inline flex container */
             align-items: center;
         }
+        .diff-number-style {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #333;
+            font-size: 18px;
+        }
 
     </style>
 </head>
@@ -196,11 +202,14 @@
                     <div class="content">
                         {% for path, change in diffs.items() %}
                         <div class="diff-row"
-                            data-path="{{ path | tojson | safe }}"
-                            data-left="{{ change.left | tojson | safe }}"
-                            data-right="{{ change.right | tojson | safe }}"
-                            data-summary="{{ change.summary | tojson | safe }}"
-                            data-include-id="include-{{ loop.index }}">
+                                data-path="{{ path | tojson | safe }}"
+                                data-left="{{ change.left | tojson | safe }}"
+                                data-right="{{ change.right | tojson | safe }}"
+                                data-summary="{{ change.summary | tojson | safe }}"
+                                data-include-id="include-{{ loop.index }}">
+                                <div class="diff-number"> <!-- This is where the numbering is displayed -->
+                                    <span class="diff-number-style">{{ loop.index }}.</span>
+                                </div>
                                 <div class="diff-sections">
                                     <div class="diff-section diff-section-left">
                                         <div class="api-label">PolishAPI</div> <!-- Label for the left side -->
