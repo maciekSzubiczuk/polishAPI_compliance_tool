@@ -1,6 +1,8 @@
 from openpyxl import Workbook
+import openpyxl
 from openpyxl.styles import PatternFill, Border, Side, Alignment
 import yaml
+import openpyxl.styles as styles  # Import styles module for conditional formatting
 
 def generate_summary(change):
     summary = []
@@ -86,67 +88,78 @@ def generate_summary(change):
 
 
 
-def generate_excel_report(all_differences, xlsx_file_path):
-    wb = Workbook()
-    ws = wb.active
-    headers = ['Section', 'Path', 'PolishApi', 'Santander', 'Summary']
-    ws.append(headers)
-    ws.auto_filter.ref = ws.dimensions
-    for section, diffs in all_differences.items():
-        for path, change in diffs.items():
-            ws.append([
-                section,
-                path,
-                change.get('left', ''),
-                change.get('right', ''),
-                change.get('summary', '')
-            ])
+def generate_excel_report(formatted_diffs, xlsx_file_path):
+  """
+  Generates an Excel report from a list of diffs.
 
-    # Change header colors
-    header_colors = {
-        'A': 'D3D3D3',  # Light gray
-        'B': 'DDA0DD',  # Light purple
-        'C': '90EE90',  # Light green
-        'D': 'FF6347',  # Darker red for Santander
-        'E': 'F0F0F0',  # Very light gray for Summary
-    }
+  Args:
+      formatted_diffs: A list of dictionaries containing diff information.
+      xlsx_file_path: The path to save the Excel report.
+  """
+  wb = openpyxl.Workbook()  # Use openpyxl.Workbook for better compatibility
+  ws = wb.active
 
-    for column, color in header_colors.items():
-        ws[column + '1'].fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
+  headers = ['Section', 'Status', 'Path', 'PolishApi', 'Santander', 'Summary']
+  ws.append(headers)
+  ws.auto_filter.ref = ws.dimensions
 
-    section_colors = {
-        'PIS': 'FFF0E0', 'CAF': 'E0FFF0', 'AIS': 'E0E0FF', 'AS': 'FFE0E0', 'Definitions': 'FFF0FF'
-    }
-    for row in ws.iter_rows(min_row=2, max_col=1, values_only=False):
-        section = row[0].value
-        if section in section_colors:
-            row[0].fill = PatternFill(start_color=section_colors[section], end_color=section_colors[section], fill_type="solid")
+  for diff in formatted_diffs:
+    ws.append([
+      diff['section'],
+      diff['status'],
+      diff['path'],
+      diff['left'],
+      diff['right'],
+      diff['summary']  # Access summary using the correct index
+    ])
 
-    thin_border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-    for row in ws.iter_rows():
-        for cell in row:
-            cell.border = thin_border
+  # Change header colors
+  header_colors = {
+  'A': 'D3D3D3',  # LIGHT GREY
+  'B': 'FFCC99',  # LIGHT ORANGE
+  'C': 'DDA0DD',  # LIGHT PURPLE
+  'D': '90EE90',  # LIGHT GREEN
+  'E': 'FFC0CB',  # LIGHT RED
+  'F': 'C6E0FF',  # LIGHT BLUE
+}
 
-    column_widths = {'B': 60, 'C': 45, 'D': 35, 'E': 35}
-    for column, width in column_widths.items():
-        ws.column_dimensions[column].width = width
+  for column, color in header_colors.items():
+    ws[column + '1'].fill = openpyxl.styles.PatternFill(start_color=color, end_color=color, fill_type="solid")
 
-    ws.delete_cols(6)
+  # Conditional formatting for potential long summaries (optional)
+  summary_column = ws['F']  # Reference column F for summary formatting
+  for cell in summary_column:
+    if cell.value:  # Apply formatting only if there's content
+      cell.alignment = openpyxl.styles.Alignment(horizontal='left', vertical='top', wrap_text=True)
+      # You can add additional formatting here, like maximum character limit or truncation
 
-    top_left_alignment = Alignment(horizontal='left', vertical='top',wrap_text=True)
-    for row in ws.iter_rows():
-        for cell in row:
-            cell.alignment = top_left_alignment
-            new_height = max(cell.value.count('\n') + 1, 1) * 15
-            if ws.row_dimensions[cell.row].height is None or \
-               ws.row_dimensions[cell.row].height < new_height:
-                ws.row_dimensions[cell.row].height = new_height
+  section_colors = {
+    'PIS': 'FFF0E0', 'CAF': 'E0FFF0', 'AIS': 'E0E0FF', 'AS': 'FFE0E0', 'Definitions': 'FFF0FF'
+  }
+  for row in ws.iter_rows(min_row=2, max_col=1, values_only=False):
+    section = row[0].value
+    if section in section_colors:
+      row[0].fill = openpyxl.styles.PatternFill(start_color=section_colors[section], end_color=section_colors[section], fill_type="solid")
 
-    ws.freeze_panes = 'A2'
-    xlsx_file_path_temp = xlsx_file_path
-    wb.save(xlsx_file_path_temp)
+  thin_border = openpyxl.styles.Border(left=openpyxl.styles.Side(style='thin'),
+                                       right=openpyxl.styles.Side(style='thin'),
+                                       top=openpyxl.styles.Side(style='thin'),
+                                       bottom=openpyxl.styles.Side(style='thin'))
+  for row in ws.iter_rows():
+    for cell in row:
+      cell.border = thin_border
+
+  column_widths = {'B': 60, 'C': 45, 'D': 35, 'E': 35,'F': 70}
+  for column, width in column_widths.items():
+    ws.column_dimensions[column].width = width
+
+  top_left_alignment = openpyxl.styles.Alignment(horizontal='left', vertical='top', wrap_text=True)
+  for row in ws.iter_rows():
+    for cell in row:
+      cell.alignment = top_left_alignment
+      new_height = max(cell.value.count('\n') + 1, 1) * 15
+      if ws.row_dimensions[cell.row].height is None or ws.row_dimensions[cell.row].height < new_height:
+        ws.row_dimensions[cell.row].height = new_height
+
+  ws.freeze_panes = 'A2'
+  wb.save(xlsx_file_path)
