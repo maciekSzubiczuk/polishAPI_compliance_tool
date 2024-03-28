@@ -95,8 +95,8 @@ field_mapping = {
 @routes.route('/save-differences', methods=['POST'])
 def save_differences():
   form_data = request.form.to_dict()
-  differences_data = {}
   print(form_data)
+  differences_data = {}
   for key, value in form_data.items():
     if any(field_name in key for field_name in field_mapping):
       index = key.split('[')[1].rstrip(']')
@@ -104,11 +104,13 @@ def save_differences():
         differences_data[index] = {field: '' for field in field_mapping.values()}
       differences_data[index][field_mapping[key.split('[')[0]]] = value
 
+
   # Filter included differences
   included_differences = []
   for data in differences_data.values():
-    if data['include'] == 'on':
+    if 'include' in data and data['include'] == 'on':
         included_differences.append(data)
+
 
   # Create temporary file and write JSON data
   with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:

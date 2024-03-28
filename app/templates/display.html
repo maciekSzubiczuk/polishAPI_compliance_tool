@@ -247,8 +247,9 @@
                                     </select>
                                 </div>
                                 <div class="include-in-report">
-                                    <input type="checkbox" id="include-{{ loop.index }}" name="include[{{ loop.index }}]" checked>
+                                    <input type="checkbox" id="include-{{ loop.index }}" name="include[{{ loop.index }}]" checked data-index="{{ loop.index }}">
                                     <label for="include-{{ loop.index }}">Include in report</label>
+                                    <input type="hidden" name="include[{{ loop.index }}]" value=""> </div>
                                 </div>
                                 <div class="summary-section">
                                     {% set last_part = path.split('/')[-1] %}
@@ -281,8 +282,23 @@
     </div>
     </form>
     <script>
+       const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="include"]');
+
+    checkboxes.forEach(checkbox => {
+    const index = checkbox.dataset.index;
+    const hiddenField = document.querySelector(`input[name="include[${index}]"]`);
+    const includeField = document.querySelector(`input[name="include[${index}]"]`);
+
+    checkbox.addEventListener("change", () => {
+        hiddenField.value = checkbox.checked ? "on" : ""; // Set "on" for checked, "" for unchecked
+        includeField.value = checkbox.checked ? "on" : ""; // Assuming you want "on" for checked differences
+    });
+    });
         // Function to highlight keywords
-        
+        document.querySelectorAll('input[type="checkbox"][name^="include"]')
+            .forEach(checkbox => checkbox.addEventListener('change', () => {
+            checkbox.value = checkbox.checked ? 'on' : 'off';
+        }));
         function highlightKeywords() {
             var keywords = ['Deleted:', 'Added:', 'From:', 'To:'];
             var summaryElements = document.querySelectorAll('.summary-content');
@@ -318,7 +334,7 @@
         };
 
         function updateIncludeValue(checkbox) {
-            checkbox.value = checkbox.checked ? 'on' : 'off';
+        checkbox.value = checkbox.checked ? 'on' : 'unchecked';
         }
 
         document.querySelectorAll('input[type="checkbox"][name^="include"]')
