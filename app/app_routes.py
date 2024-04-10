@@ -6,6 +6,7 @@ from .comparator import find_differences_by_section, find_definitions_difference
 from .report_generator import generate_summary, generate_excel_report
 import tempfile
 import os
+from flask import request, redirect, url_for
 
 # Global variables
 polish_api_data = None
@@ -79,7 +80,7 @@ def display():
 
     return render_template('display.html', differences_by_section=all_differences, counts_by_section=counts_by_section)
 
-from flask import request, redirect, url_for
+
 
 field_mapping = {
     "include": "include",
