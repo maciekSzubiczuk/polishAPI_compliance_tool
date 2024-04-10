@@ -191,60 +191,62 @@
         <div class="container">
             <h1>API Compliance Check</h1>
             <h2>Comparison Results</h2>
-            {% if differences_by_section %}
-                {% for section, diffs in differences_by_section.items() %}
-                    <div class="section" data-section-name="{{ section }}">
-                        <div class="title-row">
-                            <div class="header-inline">
-                                <button type="button" class="toggle-button" onclick="toggleSection(this)">►</button>
-                                <h3>{{ section }} Differences</h3>
-                            </div>
-                            <div class="counts">
-                                <span class="additions-count">Additions: {{ counts_by_section[section].additions }}</span>
-                                <span class="deletions-count">Deletions: {{ counts_by_section[section].deletions }}</span>
-                            </div>
-                        </div>
-                        <div class="content">
-                            {% for path, change in diffs.items() %}
-                            <div class="diff-row" 
-                                data-path="{{ path | tojson | safe }}" 
-                                data-left="{{ change.left | tojson | safe }}" 
-                                data-right="{{ change.right | tojson | safe }}" 
-                                data-summary="{{ change.summary | tojson | safe }}" 
-                                data-include-id="include-{{ loop.index }}">
-                                <input type="hidden" name="section[{{ loop.index }}]" value="{{ section }}">
-                                <input type="hidden" name="path[{{ loop.index }}]" value="{{ path }}">
-                                <input type="hidden" name="left[{{ loop.index }}]" value="{{ change.left | safe }}">
-                                <input type="hidden" name="right[{{ loop.index }}]" value="{{ change.right | safe }}">
-                                <input type="hidden" name="summary[{{ loop.index }}]" value="{{ change.summary | safe }}">
-                                <div class="diff-number">
-                                    <span class="diff-number-style">{{ loop.index }}.</span>
+            {% if flattened_differences %}
+                {% for section in api_sections.keys() | list + ['Definitions'] %}
+                    {% set section_differences = flattened_differences | selectattr("section", "equalto", section) | list %}
+                    {% if section_differences %}
+                        <div class="section" data-section-name="{{ section }}">
+                            <div class="title-row">
+                                <div class="header-inline">
+                                    <button type="button" class="toggle-button" onclick="toggleSection(this)">►</button>
+                                    <h3>{{ section }} Differences</h3>
                                 </div>
+                                <div class="counts">
+                                    <span class="additions-count">Additions: {{ counts_by_section[section].additions }}</span>
+                                    <span class="deletions-count">Deletions: {{ counts_by_section[section].deletions }}</span>
+                                </div>
+                            </div>
+                            <div class="content">
+                                {% for diff in section_differences %}
+                                    <div class="diff-row" 
+                                        data-path="{{ diff.path | tojson | safe }}" 
+                                        data-left="{{ diff.left | tojson | safe }}" 
+                                        data-right="{{ diff.right | tojson | safe }}" 
+                                        data-summary="{{ diff.summary | tojson | safe }}" 
+                                        data-include-id="include-{{ diff.id }}">
+                                        <input type="hidden" name="section[{{ diff.id }}]" value="{{ diff.section }}">
+                                        <input type="hidden" name="path[{{ diff.id }}]" value="{{ diff.path }}">
+                                        <input type="hidden" name="left[{{ diff.id }}]" value="{{ diff.left }}">
+                                        <input type="hidden" name="right[{{ diff.id }}]" value="{{ diff.right }}">
+                                        <input type="hidden" name="summary[{{ diff.id }}]" value="{{ diff.summary }}">
+                                        <div class="diff-number">
+                                            <span class="diff-number-style">{{ diff.id }}.</span>
+                                        </div>
                                 <div class="diff-sections">
                                     <!-- Left Section -->
                                     <div class="diff-section diff-section-left">
                                         <div class="api-label">PolishAPI</div>
-                                        <div class="path-title">{{ path }}</div>
-                                        {% if change.left %}
-                                        <div class="yaml-content-wrapper {{ 'deleted-summary' if change.right is none else 'changed' }}">
-                                            <pre class="yaml-content">{{ change.left | safe }}</pre>
+                                        <div class="path-title">{{ diff.path }}</div>
+                                        {% if diff.left %}
+                                        <div class="yaml-content-wrapper {{ 'deleted-summary' if diff.right is none else 'changed' }}">
+                                            <pre class="yaml-content">{{ diff.left | safe }}</pre>
                                         </div>
                                         {% endif %}
                                     </div>
                                     <!-- Right Section -->
                                     <div class="diff-section diff-section-right">
                                         <div class="api-label">Santander</div>
-                                        <div class="path-title">{{ path }}</div>
-                                        {% if change.right %}
-                                        <div class="yaml-content-wrapper {{ 'added-summary' if change.left is none else 'changed' }}">
-                                            <pre class="yaml-content">{{ change.right | safe }}</pre>
+                                        <div class="path-title">{{ diff.path }}</div>
+                                        {% if diff.right %}
+                                        <div class="yaml-content-wrapper {{ 'added-summary' if diff.left is none else 'changed' }}">
+                                            <pre class="yaml-content">{{ diff.right | safe }}</pre>
                                         </div>
                                         {% endif %}
                                     </div>
                                 </div>
                                 <div class="status-selection">
-                                    <label for="status-{{ loop.index }}">Status:</label>
-                                    <select id="status-{{ loop.index }}" name="status[{{ loop.index }}]">
+                                    <label for="status-{{ diff.id }}">Status:</label>
+                                    <select id="status-{{ diff.id }}" name="status[{{ diff.id }}]">
                                         <option value="UNCATEGORIZED" selected>UNCATEGORIZED</option>
                                         <option value="MINOR">MINOR</option>
                                         <option value="LOW">LOW</option>
@@ -253,23 +255,23 @@
                                     </select>
                                 </div>
                                 <div class="include-in-report">
-                                    <input type="checkbox" id="include-{{ loop.index }}" name="include[{{ loop.index }}]" checked data-index="{{ loop.index }}">
-                                    <label for="include-{{ loop.index }}">Include in report</label>
+                                    <input type="checkbox" id="include-{{ diff.id }}" name="include[{{ diff.id }}]" checked data-index="{{ diff.id }}">
+                                    <label for="include-{{ diff.id }}">Include in report</label>
                                 </div>
                                 <div class="summary-section">
-                                    {% set last_part = path.split('/')[-1] %}
+                                    {% set last_part = diff.path.split('/')[-1] %}
                                     <h4>Summary for {{ last_part }}</h4>
                                     <div class="summary-content-wrapper">
-                                        {% if 'Added:' in change.summary %}
+                                        {% if 'Added:' in diff.summary %}
                                         <div>
                                             <span class="highlight-keyword">Added:</span>
-                                            <pre class="yaml-content added-content" id="added-summary-{{ loop.index }}">{{ change.summary.split('Added:')[1].strip() | safe }}</pre>
+                                            <pre class="yaml-content added-content" id="added-summary-{{ diff.id }}">{{ diff.summary.split('Added:')[1].strip() | safe }}</pre>
                                         </div>
                                         {% endif %}
-                                        {% if 'Removed:' in change.summary %}
+                                        {% if 'Removed:' in diff.summary %}
                                         <div>
                                             <span class="highlight-keyword">Removed:</span>
-                                            <pre class="yaml-content removed-content" id="removed-summary-{{ loop.index }}">{{ change.summary.split('Removed:')[1].strip() | safe }}</pre>
+                                            <pre class="yaml-content removed-content" id="removed-summary-{{ diff.id }}">{{ diff.summary.split('Removed:')[1].strip() | safe }}</pre>
                                         </div>
                                         {% endif %}
                                     </div>
@@ -278,11 +280,12 @@
                             {% endfor %}
                         </div> <!-- Close content -->
                     </div> <!-- Close section -->
-                {% endfor %}
-            {% else %}
-                <p>No differences found.</p>
-            {% endif %}
-        </div> <!-- Close container -->
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No differences found.</p>
+        {% endif %}
+    </div> <!-- Close container -->
     </form>
     <script>
        const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="include"]');

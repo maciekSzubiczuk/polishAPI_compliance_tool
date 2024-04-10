@@ -42,43 +42,56 @@ def index():
 @routes.route('/display')
 def display():
     if not polish_api_data or not santander_api_data:
-        return render_template('display.html', differences_by_section={})
+        return render_template('display.html', flattened_differences=[], counts_by_section={})
 
-    # differences by API section
+    # Prepare differences by API section and definitions
     differences_by_section = find_differences_by_section(polish_api_data, santander_api_data, api_sections)
-
-    # differences in definitions
     definitions_differences = find_definitions_differences(polish_api_data, santander_api_data)
+
+    # Initialize counts_by_section with all sections, including "Definitions"
+    counts_by_section = {section: {'additions': 0, 'deletions': 0} for section in list(api_sections.keys()) + ['Definitions']}
     
-    # Combine all differences and generate summaries
-    all_differences = {}
+    # Flatten all differences into a single list with unique identifiers
+    flattened_differences = []
+    unique_id = 0  # Start an identifier to ensure each item is unique
+
     for section, diffs in differences_by_section.items():
-        formatted_diffs = {}
         for path, change in diffs.items():
-            summary = generate_summary(change)
-            formatted_diffs[path] = {
+            flattened_differences.append({
+                'id': unique_id,
+                'section': section,
+                'path': path,
                 'left': yaml.dump(change['left'], default_flow_style=False, sort_keys=False) if change['left'] else '',
                 'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
-                'summary': summary
-            }
-        all_differences[section] = formatted_diffs
+                'summary': generate_summary(change)
+            })
+            # Update counts
+            if change['left']: counts_by_section[section]['deletions'] += 1
+            if change['right']: counts_by_section[section]['additions'] += 1
+            unique_id += 1
 
-    formatted_definitions_diffs = {}
+    # Add definitions differences with unique identifiers
     for key, change in definitions_differences.items():
-        summary = generate_summary(change)
-        formatted_definitions_diffs[key] = {
+        flattened_differences.append({
+            'id': unique_id,
+            'section': 'Definitions',
+            'path': key,
             'left': yaml.dump(change['left'], default_flow_style=False, sort_keys=False) if change['left'] else '',
             'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
-            'summary': summary
-        }
-    all_differences['Definitions'] = formatted_definitions_diffs
-    counts_by_section = {}
-    for section, diffs in all_differences.items():
-        additions = sum(1 for change in diffs.values() if not change.get('left'))
-        deletions = sum(1 for change in diffs.values() if not change.get('right'))
-        counts_by_section[section] = {'additions': additions, 'deletions': deletions}
+            'summary': generate_summary(change)
+        })
+        # Update counts for "Definitions"
+        if change['left']: counts_by_section['Definitions']['deletions'] += 1
+        if change['right']: counts_by_section['Definitions']['additions'] += 1
+        unique_id += 1
 
-    return render_template('display.html', differences_by_section=all_differences, counts_by_section=counts_by_section)
+    # Now pass this flattened list and counts to the template
+    return render_template('display.html', 
+                       flattened_differences=flattened_differences, 
+                       counts_by_section=counts_by_section,
+                       api_sections=api_sections)  # Add this line
+
+
 
 
 
@@ -96,7 +109,6 @@ field_mapping = {
 @routes.route('/save-differences', methods=['POST'])
 def save_differences():
   form_data = request.form.to_dict()
-  print(form_data)
   differences_data = {}
   for key, value in form_data.items():
     if any(field_name in key for field_name in field_mapping):
