@@ -7,23 +7,27 @@
     <style>
         body {
             background-color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Make body take at least the full height of the viewport */
         }
         .upload-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* Center the child elements */
             padding: 20px;
         }
         .upload-section {
-            flex: 1;
-            margin: 0 10px;
+            width: 100%; /* Take the full width of the container */
             background-color: #f7fff7; /* Light green background */
             border: 1px solid #ddd;
             padding: 20px;
             border-radius: 5px;
+            max-width: 500px; /* Maximum width to avoid overly wide input fields */
         }
         .button-section {
             text-align: center;
             margin-top: 20px;
+            padding-bottom: 40px; /* Add padding to the bottom of the form */
         }
         .form-control-file {
             margin-top: 10px; /* Consistent margin for file inputs */
@@ -58,19 +62,13 @@
     </script>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 flex-grow-1">
         <div class="text-center">
             <img src="/static/logo_walidator.png" alt="Logo" class="logo-image">
         </div>
         <h1>API YAML File Upload</h1>
         <form action="/" method="post" enctype="multipart/form-data">
             <div class="upload-container">
-                <!-- Polish API Specification Upload -->
-                <div class="upload-section">
-                    <h2>Upload Polish API Specification</h2>
-                    <input type="file" name="polishapi_file" class="form-control-file">
-                </div>
-
                 <!-- Santander API Implementation Upload -->
                 <div class="upload-section" id="santander-upload-section">
                     <h2>Upload Santander API Implementation</h2>
@@ -91,3 +89,4 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
+

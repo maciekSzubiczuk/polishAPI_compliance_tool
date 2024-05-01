@@ -24,13 +24,21 @@ routes = Blueprint('routes', __name__)
 @routes.route('/', methods=['GET', 'POST'])
 def index():
     global polish_api_data, santander_api_data
+    polish_api_file_path = 'C:\\praca_inzynierska\\polishAPI_compliance_tool\\polishapi_specification\\PolishAPI-ver2_1_1.yaml'
     if request.method == 'POST':
-        polish_api_file = request.files.get('polishapi_file')
+        # Open the file with UTF-8 encoding explicitly specified
+        try:
+            with open(polish_api_file_path, 'r', encoding='utf-8') as file:
+                # Use your existing function to load data from the file
+                polish_api_data = load_yaml_from_file(file)
+        except FileNotFoundError:
+            return "File not found. Please check the path and try again.", 404
+        except UnicodeDecodeError:
+            return "Unicode decoding error. Check that the file is UTF-8 encoded.", 500
+        except Exception as e:
+            return f"An error occurred while loading the file: {str(e)}", 500
+
         santander_files = request.files.getlist('santander_files')
-
-        if polish_api_file:
-            polish_api_data = load_yaml_from_file(polish_api_file)
-
         if santander_files:
             santander_api_data = merge_api_data(santander_files)
 
