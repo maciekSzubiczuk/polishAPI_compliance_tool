@@ -9,55 +9,106 @@
             background-color: white;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Make body take at least the full height of the viewport */
+            min-height: 100vh;
         }
         .upload-container {
             display: flex;
-            justify-content: center; /* Center the child elements */
+            justify-content: center;
             padding: 20px;
         }
         .upload-section {
-            width: 100%; /* Take the full width of the container */
-            background-color: #f7fff7; /* Light green background */
+            width: 100%;
+            background-color: #f7fff7;
             border: 1px solid #ddd;
             padding: 20px;
             border-radius: 5px;
-            max-width: 500px; /* Maximum width to avoid overly wide input fields */
+            max-width: 500px;
         }
         .button-section {
             text-align: center;
             margin-top: 20px;
-            padding-bottom: 40px; /* Add padding to the bottom of the form */
+            padding-bottom: 40px;
         }
-        .form-control-file {
-            margin-top: 10px; /* Consistent margin for file inputs */
+        .file-upload-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .file-name {
+            flex-grow: 1;
+            margin-left: 10px; /* space between input and filename */
+        }
+        .delete-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
         }
 
         h1 {
-            color: #004d40; /* Black with a green tinge */
+            color: #004d40;
             text-align: center;
             margin-bottom: 20px;
         }
         .logo-image {
-            max-width: 100px; /* Adjust the size as needed */
-            height: auto; /* Maintain aspect ratio */
-            margin-bottom: 20px; /* Space between the logo and the title */
+            max-width: 100px;
+            height: auto;
+            margin-bottom: 20px;
         }
-
     </style>
     <script>
         function addFileInput() {
-            var newInput = document.createElement("input");
-            newInput.type = "file";
-            newInput.name = "santander_files";
-            newInput.className = "form-control-file";
+        var container = document.createElement("div");
+        container.className = "file-upload-wrapper";
 
-            var addButton = document.getElementById("add-file-button");
-            var lastInput = document.getElementById("santander-upload-section").lastElementChild;
-            if(lastInput.tagName === "INPUT") {
-                lastInput = lastInput.nextSibling; // If the last child is an input, we skip to the next sibling (to maintain the structure)
+        var fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.name = "santander_files";
+        fileInput.className = "form-control-file";
+        fileInput.style.display = "none"; // Hide the actual file input
+
+        var label = document.createElement("label");
+        label.textContent = "Choose file";
+        label.className = "btn btn-secondary";
+        label.onclick = function() {
+            fileInput.click();
+        };
+
+        var fileNameSpan = document.createElement("span");
+        fileNameSpan.className = "file-name";
+        fileNameSpan.textContent = "No file chosen"; // Default text when no file is chosen
+
+        fileInput.onchange = function() {
+            if(fileInput.files.length > 0) {
+                fileNameSpan.textContent = fileInput.files[0].name; // Update with the file name
+            } else {
+                fileNameSpan.textContent = "No file chosen"; // Reset if file selection is cleared
             }
-            document.getElementById("santander-upload-section").insertBefore(newInput, lastInput);
+        };
+
+        var deleteButton = createDeleteButton(container);
+
+        container.appendChild(label);
+        container.appendChild(fileInput);
+        container.appendChild(fileNameSpan);
+        container.appendChild(deleteButton);
+
+        var addButton = document.getElementById("add-file-button");
+        document.getElementById("santander-upload-section").insertBefore(container, addButton);
+        }
+
+        function createDeleteButton(parentElement) {
+            var button = document.createElement("button");
+            button.type = "button";
+            button.className = "delete-button";
+            button.textContent = "Delete";
+            button.onclick = function() {
+                parentElement.remove();
+            };
+            return button;
         }
     </script>
 </head>
@@ -69,20 +120,16 @@
         <h1>API YAML File Upload</h1>
         <form action="/" method="post" enctype="multipart/form-data">
             <div class="upload-container">
-                <!-- Santander API Implementation Upload -->
                 <div class="upload-section" id="santander-upload-section">
                     <h2>Upload Santander API Implementation</h2>
-                    <input type="file" name="santander_files" class="form-control-file">
-                    <button type="button" id="add-file-button" class="btn btn-secondary mt-2" onclick="addFileInput()">Add Another File</button>
+                    <button type="button" id="add-file-button" class="btn btn-secondary mt-2" onclick="addFileInput()">Add file</button>
                 </div>
             </div>
-
             <div class="button-section">
                 <input type="submit" value="Check Compliance" class="btn btn-primary mt-3">
             </div>
         </form>
     </div>
-
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
