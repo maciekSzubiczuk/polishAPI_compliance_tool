@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, send_file, session, jsonify
 import yaml
 import json  # Add this import at the top of your app_routes.py file
-from .api_data_handler import merge_api_data, load_yaml_from_file
+from .api_data_model import merge_api_data, load_yaml_from_file
 from .comparator import find_differences_by_section, find_definitions_differences
 from .report_generator import generate_summary, generate_excel_report
 import tempfile
