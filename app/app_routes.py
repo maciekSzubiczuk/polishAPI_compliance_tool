@@ -21,10 +21,15 @@ api_sections = {
 
 routes = Blueprint('routes', __name__)
 
+# Helper function to check file extensions
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'yaml', 'yml'}
+
 @routes.route('/', methods=['GET', 'POST'])
 def index():
     global polish_api_data, santander_api_data
     polish_api_file_path = 'C:\\praca_inzynierska\\polishAPI_compliance_tool\\polishapi_specification\\PolishAPI-ver2_1_1.yaml'
+    
     if request.method == 'POST':
         # Open the file with UTF-8 encoding explicitly specified
         try:
@@ -38,7 +43,12 @@ def index():
         except Exception as e:
             return f"An error occurred while loading the file: {str(e)}", 500
 
+        # Processing uploaded files
         santander_files = request.files.getlist('santander_files')
+        if not all(allowed_file(file.filename) for file in santander_files):
+            # If any file is not allowed, render the custom error page
+            error_message = "Invalid file type. Only YAML files are allowed."
+            return render_template('invalid_file_type.html', error_message=error_message)  # Pass the error message to the template
         if santander_files:
             santander_api_data = merge_api_data(santander_files)
 
