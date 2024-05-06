@@ -36,7 +36,7 @@
         }
         .file-name {
             flex-grow: 1;
-            margin-left: 10px; /* space between input and filename */
+            margin-left: 10px;
         }
         .delete-button {
             background-color: red;
@@ -47,7 +47,6 @@
             cursor: pointer;
             margin-left: 5px;
         }
-
         h1 {
             color: #004d40;
             text-align: center;
@@ -59,71 +58,72 @@
             margin-bottom: 20px;
         }
         .add-file-btn {
-        background-color: #004d40; /* Dark green color */
-        color: white; /* Text color */
-        border: none; /* No border */
-        padding: 10px 15px; /* Padding around the text */
-        border-radius: 5px; /* Rounded corners */
-        cursor: pointer; /* Pointer cursor on hover */
-        transition: box-shadow 0.3s ease; /* Smooth transition for box-shadow effect */
+            background-color: #004d40;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease;
         }
-
         .add-file-btn:hover {
-            box-shadow: 0 0 8px 2px rgba(255,255,255,0.8); /* Brighter edges on hover */
-            color: white; /* Maintain the same white text color on hover */
+            box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
+            color: white;
         }
     </style>
     <script>
-        function addFileInput() {
-        var container = document.createElement("div");
-        container.className = "file-upload-wrapper";
+        document.addEventListener("DOMContentLoaded", function() {
+            const checkButton = document.querySelector('input[type="submit"]');
+            checkButton.disabled = true; // Disable button initially
 
-        var fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.name = "santander_files";
-        fileInput.className = "form-control-file";
-        fileInput.style.display = "none"; // Hide the actual file input
-
-        var label = document.createElement("label");
-        label.textContent = "Choose file";
-        label.className = "btn btn-secondary";
-        label.onclick = function() {
-            fileInput.click();
-        };
-
-        var fileNameSpan = document.createElement("span");
-        fileNameSpan.className = "file-name";
-        fileNameSpan.textContent = "No file chosen"; // Default text when no file is chosen
-
-        fileInput.onchange = function() {
-            if(fileInput.files.length > 0) {
-                fileNameSpan.textContent = fileInput.files[0].name; // Update with the file name
-            } else {
-                fileNameSpan.textContent = "No file chosen"; // Reset if file selection is cleared
+            function updateSubmitButtonState() {
+                const files = document.querySelectorAll('input[type="file"]');
+                const anyFilesSelected = Array.from(files).some(file => file.files.length > 0);
+                checkButton.disabled = !anyFilesSelected;
             }
-        };
 
-        var deleteButton = createDeleteButton(container);
+            window.addFileInput = function() {
+                var container = document.createElement("div");
+                container.className = "file-upload-wrapper";
 
-        container.appendChild(label);
-        container.appendChild(fileInput);
-        container.appendChild(fileNameSpan);
-        container.appendChild(deleteButton);
+                var fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.name = "santander_files";
+                fileInput.className = "form-control-file";
+                fileInput.style.display = "none"; // Hide the actual file input
 
-        var addButton = document.getElementById("add-file-button");
-        document.getElementById("santander-upload-section").insertBefore(container, addButton);
-        }
+                var label = document.createElement("label");
+                label.textContent = "Choose file";
+                label.className = "btn btn-secondary";
+                label.onclick = function() { fileInput.click(); };
 
-        function createDeleteButton(parentElement) {
-            var button = document.createElement("button");
-            button.type = "button";
-            button.className = "delete-button";
-            button.textContent = "Delete";
-            button.onclick = function() {
-                parentElement.remove();
+                var fileNameSpan = document.createElement("span");
+                fileNameSpan.className = "file-name";
+                fileNameSpan.textContent = "No file chosen";
+
+                fileInput.onchange = function() {
+                    fileNameSpan.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "No file chosen";
+                    updateSubmitButtonState(); // Update button state on file selection
+                };
+
+                var deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "delete-button";
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = function() {
+                    container.remove();
+                    updateSubmitButtonState(); // Update button state on file deletion
+                };
+
+                container.appendChild(label);
+                container.appendChild(fileInput);
+                container.appendChild(fileNameSpan);
+                container.appendChild(deleteButton);
+
+                var addButton = document.getElementById("add-file-button");
+                document.getElementById("santander-upload-section").insertBefore(container, addButton);
             };
-            return button;
-        }
+        });
     </script>
 </head>
 <body>
@@ -151,4 +151,3 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
-
