@@ -181,6 +181,16 @@
         .hidden {
             display: none;
         }
+        .count-item {
+            padding: 0 8px; /* Adjust spacing around the count items */
+        }
+
+        .separator {
+            color: #666; /* Subtle color for the separator */
+            font-size: 1.2em; /* Slightly larger size to make the dot noticeable */
+            padding: 0 5px; /* Spacing around the separator */
+        }
+
 
 
     </style>
@@ -202,7 +212,10 @@
                                     <h3>{{ section }} Differences</h3>
                                 </div>
                                 <div class="counts">
+                                    <span class="count-item">Total Differences: {{ counts_by_section[section].total_differences }}</span>
+                                    <span class="separator">/</span>
                                     <span class="additions-count">Additions: {{ counts_by_section[section].additions }}</span>
+                                    <span class="separator">/</span>
                                     <span class="deletions-count">Deletions: {{ counts_by_section[section].deletions }}</span>
                                 </div>
                             </div>

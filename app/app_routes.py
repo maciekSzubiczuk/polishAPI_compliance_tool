@@ -59,13 +59,14 @@ def display():
     definitions_differences = find_definitions_differences(polish_api_data, santander_api_data)
 
     # Initialize counts_by_section with all sections, including "Definitions"
-    counts_by_section = {section: {'additions': 0, 'deletions': 0} for section in list(api_sections.keys()) + ['Definitions']}
-    
-    # Flatten all differences into a single list with unique identifiers
+    counts_by_section = {section: {'additions': 0, 'deletions': 0, 'total_differences': 0} for section in api_sections.keys()}
+    counts_by_section['Definitions'] = {'additions': 0, 'deletions': 0, 'total_differences': 0}
+
     flattened_differences = []
     unique_id = 0  # Start an identifier to ensure each item is unique
 
     for section, diffs in differences_by_section.items():
+        section_diff_count = 0  # Reset count for each section
         for path, change in diffs.items():
             flattened_differences.append({
                 'id': unique_id,
@@ -78,9 +79,12 @@ def display():
             # Update counts
             if change['left']: counts_by_section[section]['deletions'] += 1
             if change['right']: counts_by_section[section]['additions'] += 1
+            section_diff_count += 1
             unique_id += 1
+        counts_by_section[section]['total_differences'] = section_diff_count
 
-    # Add definitions differences with unique identifiers
+    # Handle definitions differences similarly
+    definitions_diff_count = 0
     for key, change in definitions_differences.items():
         flattened_differences.append({
             'id': unique_id,
@@ -90,16 +94,18 @@ def display():
             'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
             'summary': generate_summary(change)
         })
-        # Update counts for "Definitions"
         if change['left']: counts_by_section['Definitions']['deletions'] += 1
         if change['right']: counts_by_section['Definitions']['additions'] += 1
+        definitions_diff_count += 1
         unique_id += 1
+    counts_by_section['Definitions']['total_differences'] = definitions_diff_count
 
     # Now pass this flattened list and counts to the template
     return render_template('display.html', 
-                       flattened_differences=flattened_differences, 
-                       counts_by_section=counts_by_section,
-                       api_sections=api_sections)  # Add this line
+                           flattened_differences=flattened_differences, 
+                           counts_by_section=counts_by_section,
+                           api_sections=api_sections)
+
 
 
 
