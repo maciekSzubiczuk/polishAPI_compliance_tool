@@ -12,6 +12,7 @@ from flask import request, redirect, url_for
 polish_api_data = None
 santander_api_data = []
 xlsx_file_path = 'C:\praca_inzynierska\polishAPI_compliance_tool\\reports\\report.xlsx'
+polish_api_file_path = 'C:\\praca_inzynierska\\polishAPI_compliance_tool\\polishapi_specification\\PolishAPI-ver2_1_1.yaml'
 api_sections = {
     'PIS': '/v2_1_1.1/payments',
     'CAF': '/v2_1_1.1/confirmation',
@@ -28,13 +29,9 @@ def allowed_file(filename):
 @routes.route('/', methods=['GET', 'POST'])
 def index():
     global polish_api_data, santander_api_data
-    polish_api_file_path = 'C:\\praca_inzynierska\\polishAPI_compliance_tool\\polishapi_specification\\PolishAPI-ver2_1_1.yaml'
-    
     if request.method == 'POST':
-        # Open the file with UTF-8 encoding explicitly specified
         try:
             with open(polish_api_file_path, 'r', encoding='utf-8') as file:
-                # Use your existing function to load data from the file
                 polish_api_data = load_yaml_from_file(file)
         except FileNotFoundError:
             return "File not found. Please check the path and try again.", 404
@@ -42,18 +39,13 @@ def index():
             return "Unicode decoding error. Check that the file is UTF-8 encoded.", 500
         except Exception as e:
             return f"An error occurred while loading the file: {str(e)}", 500
-
-        # Processing uploaded files
         santander_files = request.files.getlist('santander_files')
         if not all(allowed_file(file.filename) for file in santander_files):
-            # If any file is not allowed, render the custom error page
             error_message = "Invalid file type. Only YAML files are allowed."
-            return render_template('invalid_file_type.html', error_message=error_message)  # Pass the error message to the template
+            return render_template('invalid_file_type.html', error_message=error_message)
         if santander_files:
             santander_api_data = merge_api_data(santander_files)
-
         return redirect(url_for('routes.display'))
-
     return render_template('upload.html')
 
 
