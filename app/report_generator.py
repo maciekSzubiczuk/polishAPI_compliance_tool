@@ -2,7 +2,7 @@ from openpyxl import Workbook
 import openpyxl
 from openpyxl.styles import PatternFill, Border, Side, Alignment
 import yaml
-import openpyxl.styles as styles  # Import styles module for conditional formatting
+import openpyxl.styles as styles  
 
 def generate_summary(change):
     summary = []
@@ -25,14 +25,11 @@ def generate_summary(change):
                 formatted_list.append(f"{indent}{prefix}{format_yaml(v, level + 1, False)}")
             return "\n".join(formatted_list)
         else:
-            # Ensure scalar values at the top level are prefixed with a bullet point
             return f"{indent}{'• ' if is_top_level else ''}{value}"
         
     def format_change(path, value, change_type):
-        # Check for empty values and return None or an empty string to prevent appending
         if value is None or (isinstance(value, (dict, list)) and not value):
             return ''
-        # Always consider the root level as top-level for bullet points
         formatted_value = format_yaml(value, 0, is_top_level=True)
         prefix = f"{change_type}:" if path == 'Root' else f"{change_type}:\n{path}"
         return f"{prefix}\n{formatted_value}"
@@ -44,7 +41,6 @@ def generate_summary(change):
             right_value = right.get(key)
             new_path = f"{path}.{key}" if path else key
 
-            # Check for meaningful differences before appending
             if left_value is None and right_value:
                 formatted_change = format_change(new_path, right_value, "Added")
                 if formatted_change.strip():
@@ -59,7 +55,6 @@ def generate_summary(change):
                 compare_lists(left_value, right_value, new_path)
             elif left_value != right_value:
                 if right_value is None or left_value is None:
-                    # This case is handled by the initial checks for None
                     pass
                 else:
                     formatted_change = format_change(new_path, right_value if left_value is None else left_value, "Removed" if right_value is None else "Added")
@@ -96,7 +91,7 @@ def generate_excel_report(formatted_diffs, xlsx_file_path):
       formatted_diffs: A list of dictionaries containing diff information.
       xlsx_file_path: The path to save the Excel report.
   """
-  wb = openpyxl.Workbook()  # Use openpyxl.Workbook for better compatibility
+  wb = openpyxl.Workbook() 
   ws = wb.active
 
   headers = ['Section', 'Status', 'Path', 'PolishApi', 'Santander', 'Summary']
@@ -110,10 +105,9 @@ def generate_excel_report(formatted_diffs, xlsx_file_path):
       diff['path'],
       diff['left'],
       diff['right'],
-      diff['summary']  # Access summary using the correct index
+      diff['summary']
     ])
 
-  # Change header colors
   header_colors = {
   'A': 'D3D3D3',  # LIGHT GREY
   'B': 'FFCC99',  # LIGHT ORANGE
@@ -126,12 +120,10 @@ def generate_excel_report(formatted_diffs, xlsx_file_path):
   for column, color in header_colors.items():
     ws[column + '1'].fill = openpyxl.styles.PatternFill(start_color=color, end_color=color, fill_type="solid")
 
-  # Conditional formatting for potential long summaries (optional)
-  summary_column = ws['F']  # Reference column F for summary formatting
+  summary_column = ws['F'] 
   for cell in summary_column:
-    if cell.value:  # Apply formatting only if there's content
+    if cell.value: 
       cell.alignment = openpyxl.styles.Alignment(horizontal='left', vertical='top', wrap_text=True)
-      # You can add additional formatting here, like maximum character limit or truncation
 
   section_colors = {
     'PIS': 'FFF0E0', 'CAF': 'E0FFF0', 'AIS': 'E0E0FF', 'AS': 'FFE0E0', 'Definitions': 'FFF0FF'

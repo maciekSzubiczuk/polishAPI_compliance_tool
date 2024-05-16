@@ -70,6 +70,12 @@
             box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
             color: white;
         }
+        /* Style for disabled submit button */
+        input[type="submit"]:disabled {
+            background-color: #ccc; /* Grey background */
+            color: #666;
+            cursor: not-allowed;
+        }
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -136,7 +142,7 @@
         <form action="/" method="post" enctype="multipart/form-data">
             <div class="upload-container">
                 <div class="upload-section" id="santander-upload-section">
-                    <h2>Upload Santander API Implementation</h2>
+                    <h2>Upload Santander API Documentation</h2>
                     <button type="button" id="add-file-button" class="btn add-file-btn mt-2" onclick="addFileInput()">Add file</button>
                 </div>
             </div>

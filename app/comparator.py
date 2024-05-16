@@ -32,17 +32,16 @@ def find_differences(dict1, dict2, base_path=''):
     differences = {}
     for key in dict1:
         if key not in dict2:
-            # Check if dict1[key] is not just an empty placeholder
             if dict1[key]:
                 differences[base_path + key] = {'left': dict1[key], 'right': None}
         elif dict1[key] != dict2[key]:
             if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
                 sub_diffs = find_differences(dict1[key], dict2[key], base_path + key + '.')
-                if sub_diffs:  # Only add sub-differences if there are any
+                if sub_diffs:
                     differences.update(sub_diffs)
-            elif dict1[key] or dict2[key]:  # Check if at least one side has a meaningful value
+            elif dict1[key] or dict2[key]:
                 differences[base_path + key] = {'left': dict1[key], 'right': dict2[key]}
     for key in dict2:
-        if key not in dict1 and dict2[key]:  # Check if dict2[key] is not just an empty placeholder
+        if key not in dict1 and dict2[key]:
             differences[base_path + key] = {'left': None, 'right': dict2[key]}
     return differences

@@ -2,7 +2,7 @@ from flask import Flask
 from .app_routes import routes
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Set your secret key here
+app.secret_key = 'your_secret_key_here'
 
 app.register_blueprint(routes)
 

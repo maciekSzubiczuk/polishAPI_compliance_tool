@@ -22,7 +22,6 @@ api_sections = {
 
 routes = Blueprint('routes', __name__)
 
-# Helper function to check file extensions
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'yaml', 'yml'}
 
@@ -54,19 +53,17 @@ def display():
     if not polish_api_data or not santander_api_data:
         return render_template('display.html', flattened_differences=[], counts_by_section={})
 
-    # Prepare differences by API section and definitions
     differences_by_section = find_differences_by_section(polish_api_data, santander_api_data, api_sections)
     definitions_differences = find_definitions_differences(polish_api_data, santander_api_data)
 
-    # Initialize counts_by_section with all sections, including "Definitions"
     counts_by_section = {section: {'additions': 0, 'deletions': 0, 'total_differences': 0} for section in api_sections.keys()}
     counts_by_section['Definitions'] = {'additions': 0, 'deletions': 0, 'total_differences': 0}
 
     flattened_differences = []
-    unique_id = 0  # Start an identifier to ensure each item is unique
+    unique_id = 0
 
     for section, diffs in differences_by_section.items():
-        section_diff_count = 0  # Reset count for each section
+        section_diff_count = 0
         for path, change in diffs.items():
             flattened_differences.append({
                 'id': unique_id,
@@ -76,14 +73,12 @@ def display():
                 'right': yaml.dump(change['right'], default_flow_style=False, sort_keys=False) if change['right'] else '',
                 'summary': generate_summary(change)
             })
-            # Update counts
             if change['left']: counts_by_section[section]['deletions'] += 1
             if change['right']: counts_by_section[section]['additions'] += 1
             section_diff_count += 1
             unique_id += 1
         counts_by_section[section]['total_differences'] = section_diff_count
 
-    # Handle definitions differences similarly
     definitions_diff_count = 0
     for key, change in definitions_differences.items():
         flattened_differences.append({
@@ -100,7 +95,6 @@ def display():
         unique_id += 1
     counts_by_section['Definitions']['total_differences'] = definitions_diff_count
 
-    # Now pass this flattened list and counts to the template
     return render_template('display.html', 
                            flattened_differences=flattened_differences, 
                            counts_by_section=counts_by_section,
@@ -133,23 +127,15 @@ def save_differences():
         differences_data[index] = {field: '' for field in field_mapping.values()}
       differences_data[index][field_mapping[key.split('[')[0]]] = value
 
-
-  # Filter included differences
   included_differences = []
   for data in differences_data.values():
     if 'include' in data and data['include'] == 'on':
         included_differences.append(data)
 
-
-  # Create temporary file and write JSON data
   with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
     json.dump(included_differences, temp_file)
-    temp_file_path = temp_file.name  # Store the temporary file path
+    temp_file_path = temp_file.name  
 
-  # No need to store data in session (commented out)
-  # session['included_differences'] = json.dumps(included_differences)  
-
-  # Redirect to download route with temporary file path as argument
   return redirect(url_for('routes.download_xlsx', temp_file_path=temp_file_path))
 
 
@@ -157,29 +143,22 @@ def save_differences():
 
 @routes.route('/download-xlsx')
 def download_xlsx():
-  # Retrieve temporary file path from request argument
+ 
   temp_file_path = request.args.get('temp_file_path')
 
-  # Check if data is present
   if not temp_file_path or not os.path.exists(temp_file_path):
     return "No differences found for download", 404
 
   try:
-    # Read JSON data from temporary file
     with open(temp_file_path, 'r') as temp_file:
       formatted_differences = json.load(temp_file)
-
-    # Delete temporary file after reading
     os.remove(temp_file_path)
 
   except (json.JSONDecodeError, FileNotFoundError):
-    # Handle potential errors (decoding or file not found)
     return "Error processing differences. Please try again.", 500
 
-  # Pass data to Excel generation logic (assuming generate_excel_report exists)
   generate_excel_report(formatted_differences, xlsx_file_path)
 
-  # Return the generated Excel file
   return send_file(xlsx_file_path, as_attachment=True, download_name='report.xlsx')
 
 

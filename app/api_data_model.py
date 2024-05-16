@@ -9,7 +9,6 @@ def merge_api_data(api_files):
                 if isinstance(merged_data[key], dict) and isinstance(value, dict):
                     merged_data[key].update(value)
                 elif isinstance(merged_data[key], list) and isinstance(value, list):
-                    # Extend the list with unique items
                     for item in value:
                         if item not in merged_data[key]:
                             merged_data[key].append(item)
