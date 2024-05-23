@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>API YAML File Upload</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
         body {
@@ -70,7 +69,6 @@
             box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
             color: white;
         }
-        /* Style for disabled submit button */
         input[type="submit"]:disabled {
             background-color: #ccc; /* Grey background */
             color: #666;
@@ -80,7 +78,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const checkButton = document.querySelector('input[type="submit"]');
-            checkButton.disabled = true; // Disable button initially
+            checkButton.disabled = true;
 
             function updateSubmitButtonState() {
                 const files = document.querySelectorAll('input[type="file"]');
@@ -96,7 +94,7 @@
                 fileInput.type = "file";
                 fileInput.name = "santander_files";
                 fileInput.className = "form-control-file";
-                fileInput.style.display = "none"; // Hide the actual file input
+                fileInput.style.display = "none";
 
                 var label = document.createElement("label");
                 label.textContent = "Choose file";
@@ -109,7 +107,7 @@
 
                 fileInput.onchange = function() {
                     fileNameSpan.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "No file chosen";
-                    updateSubmitButtonState(); // Update button state on file selection
+                    updateSubmitButtonState();
                 };
 
                 var deleteButton = document.createElement("button");
@@ -118,7 +116,7 @@
                 deleteButton.textContent = "Delete";
                 deleteButton.onclick = function() {
                     container.remove();
-                    updateSubmitButtonState(); // Update button state on file deletion
+                    updateSubmitButtonState();
                 };
 
                 container.appendChild(label);
