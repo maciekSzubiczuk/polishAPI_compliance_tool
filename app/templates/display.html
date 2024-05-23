@@ -18,13 +18,13 @@
 
         .title-row {
             font-size: 1.5em;
-            margin-bottom: 10px; /* Add space between title row and the content below */
+            margin-bottom: 10px;
         }
 
         .title-row h3 {
             margin-left: 10px;
             color: #004d40;
-            display: inline; /* Inline display for the header */
+            display: inline;
         }
 
 
@@ -147,20 +147,20 @@
         .api-label {
             font-weight: bold;
             text-align: center;
-            margin-bottom: 10px; /* Add some space between the label and the content */
-            color: #555; /* Choose a color that stands out but fits the design */
+            margin-bottom: 10px;
+            color: #555;
         }
         .include-in-report {
-            margin-bottom: 10px; /* Space before the summary section */
-            display: flex; /* To align the checkbox and label on the same line */
-            align-items: center; /* Vertically center the checkbox and label */
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
         }
 
         .include-in-report label {
-            margin-left: 5px; /* Space between the checkbox and label */
+            margin-left: 5px;
         }
         .counts {
-            display: block; /* Force it to behave like a block-level element */
+            display: block;
         }
         .additions-count {
             color: darkgreen;
@@ -169,7 +169,7 @@
             color: darkred;
         }
         .header-inline {
-            display: inline-flex; /* Inline flex container */
+            display: inline-flex;
             align-items: center;
         }
         .diff-number-style {
@@ -182,13 +182,13 @@
             display: none;
         }
         .count-item {
-            padding: 0 8px; /* Adjust spacing around the count items */
+            padding: 0 8px;
         }
 
         .separator {
-            color: #666; /* Subtle color for the separator */
-            font-size: 1.2em; /* Slightly larger size to make the dot noticeable */
-            padding: 0 5px; /* Spacing around the separator */
+            color: #666; 
+            font-size: 1.2em;
+            padding: 0 5px;
         }
 
 
@@ -289,16 +289,16 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                            </div> <!-- Close diff-row -->
+                            </div> 
                             {% endfor %}
-                        </div> <!-- Close content -->
-                    </div> <!-- Close section -->
+                        </div>
+                    </div>
                 {% endif %}
             {% endfor %}
         {% else %}
             <p>No differences found.</p>
         {% endif %}
-    </div> <!-- Close container -->
+    </div>
     </form>
     <script>
        const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="include"]');
@@ -309,11 +309,11 @@
     const includeField = document.querySelector(`input[name="include[${index}]"]`);
 
     checkbox.addEventListener("change", () => {
-        hiddenField.value = checkbox.checked ? "on" : ""; // Set "on" for checked, "" for unchecked
-        includeField.value = checkbox.checked ? "on" : ""; // Assuming you want "on" for checked differences
+        hiddenField.value = checkbox.checked ? "on" : "";
+        includeField.value = checkbox.checked ? "on" : "";
     });
     });
-        // Function to highlight keywords
+        
         document.querySelectorAll('input[type="checkbox"][name^="include"]')
             .forEach(checkbox => checkbox.addEventListener('change', () => {
             checkbox.value = checkbox.checked ? 'on' : 'off';
@@ -336,23 +336,20 @@
         function formatSummaryContent() {
             document.querySelectorAll('.added-content, .removed-content').forEach(function(element) {
                 let content = element.innerText;
-                // No need to replace dashes with line breaks as they are already formatted
                 element.innerHTML = '<pre>' + content + '</pre>';
             });
         }
         function toggleSection(button) {
-            // Find the nearest parent .section div and then find its .content child
             var content = button.closest('.section').querySelector('.content');
             if (content.style.display === "none" || content.style.display === "") {
                 content.style.display = "block";
-                button.innerHTML = "▼"; // Arrow pointing down
+                button.innerHTML = "▼";
             } else {
                 content.style.display = "none";
-                button.innerHTML = "►"; // Arrow pointing right
+                button.innerHTML = "►";
             }
         }
-
-        // On window load
+        
         window.onload = function() {
             highlightKeywords();
             formatSummaryContent();
